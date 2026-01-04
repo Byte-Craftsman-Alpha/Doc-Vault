@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+
+{% block title %}Vault - Cloud Vault{% endblock %}
+
+{% block content %}
+  <div class="minimal-card p-3">
+    <div class="flex items-center gap-3 flex-wrap">
+      <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" onclick="window.history.back()" title="Back">
+        <span class="iconify" data-icon="mdi:arrow-left"></span>
+      </button>
+
+      <div class="flex-1 min-w-[240px]">
+        <div class="flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-white">
+          <span class="iconify text-slate-400" data-icon="mdi:folder-outline"></span>
+          <div class="text-sm text-slate-700 flex items-center gap-1 flex-wrap">
+            {% for label, href in breadcrumbs %}
+              <a class="font-semibold hover:underline" href="{{ href }}">{{ label }}</a>
+              {% if not loop.last %}
+                <span class="text-slate-400">›</span>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 min-w-[240px]">
+        <form method="get" action="{{ url_for('search') }}">
+          <div class="flex items-center gap-2">
+            <div class="flex-1 flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-white">
+              <span class="iconify text-slate-400" data-icon="mdi:magnify"></span>
+              <input class="w-full text-sm focus:outline-none" name="q" placeholder="Search Vault" />
+              <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" onclick="toggleExplorerAdvancedSearch()" title="Advanced search">
+                <span class="iconify" data-icon="mdi:tune-vertical"></span>
+              </button>
+              <button class="minimal-btn minimal-btn-primary" type="submit" title="Search">
+                <span class="iconify" data-icon="mdi:arrow-right"></span>
+              </button>
+            </div>
+          </div>
+
+          <div id="explorer-advanced" class="hidden mt-2">
+            <div class="grid grid-cols-2 gap-2">
+              <input class="minimal-input" style="padding:.55rem .75rem" name="ext" placeholder="Extension (pdf)" />
+              <input class="minimal-input" style="padding:.55rem .75rem" name="filetype" placeholder="Filetype (image/)" />
+              <input class="minimal-input" style="padding:.55rem .75rem" type="date" name="date_from" />
+              <input class="minimal-input" style="padding:.55rem .75rem" type="date" name="date_to" />
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="relative">
+        <button class="minimal-btn minimal-btn-primary" type="button" onclick="toggleExplorerNewMenu()">
+          <span class="iconify" data-icon="mdi:plus"></span>
+          <span>New</span>
+        </button>
+
+        <div id="explorer-new-menu" class="hidden absolute right-0 mt-2 w-96 z-10">
+          <div class="minimal-card p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">New folder</div>
+            <form class="flex gap-3 ajax-form" method="post" action="{{ url_for('create_folder') }}" data-ajax="json">
+              <input class="minimal-input" name="name" placeholder="Folder name" required />
+              <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">
+                <span class="iconify" data-icon="mdi:folder-plus-outline"></span>
+                <span>Create</span>
+              </button>
+            </form>
+
+            <div class="mt-5 text-xs uppercase tracking-wider text-slate-500 mb-3">Upload file</div>
+            <form class="space-y-3 ajax-form" method="post" enctype="multipart/form-data" action="{{ url_for('upload_any') }}" data-ajax="multipart">
+              <select class="minimal-input" name="folder_id" required>
+                {% if root_folder_id %}
+                  <option value="{{ root_folder_id }}" {% if not selected_folder_id %}selected{% endif %}>Vault (root)</option>
+                {% endif %}
+                <option value="" disabled {% if selected_folder_id %}selected{% endif %}>Select folder</option>
+                {% for folder in all_folders %}
+                  {% if folder.id != root_folder_id %}
+                    <option value="{{ folder.id }}" {% if selected_folder_id == folder.id %}selected{% endif %}>{{ folder.name }}</option>
+                  {% endif %}
+                {% endfor %}
+              </select>
+              <input class="minimal-input" type="file" name="file" required />
+              <button class="minimal-btn w-full minimal-btn-primary" type="submit">
+                <span class="iconify" data-icon="mdi:upload"></span>
+                <span>Upload</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-6 minimal-card overflow-hidden">
+    <div class="p-4 border-b border-slate-200 flex items-center justify-between">
+      <div class="font-semibold text-slate-900 flex items-center gap-3" id="current-folder-pin" data-current-folder-id="{{ selected_folder.id if selected_folder else '' }}">
+        {% if selected_folder %}
+          <span>{{ selected_folder.name }}</span>
+          {% if selected_folder.is_bookmarked %}
+            <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('unbookmark_folder', folder_id=selected_folder.id) }}">
+              <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Remove from Quick access">
+                <span class="iconify" data-icon="mdi:bookmark-remove-outline"></span>
+                <span>Unpin</span>
+              </button>
+            </form>
+          {% else %}
+            <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('bookmark_folder', folder_id=selected_folder.id) }}">
+              <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Add to Quick access">
+                <span class="iconify" data-icon="mdi:bookmark-outline"></span>
+                <span>Pin</span>
+              </button>
+            </form>
+          {% endif %}
+        {% else %}
+          Folders
+        {% endif %}
+      </div>
+      <div class="text-xs text-slate-500">
+        {% if selected_folder %}
+          Files in this folder
+        {% else %}
+          Double-click a folder to open
+        {% endif %}
+      </div>
+    </div>
+
+    {% if not selected_folder %}
+      <div class="divide-y divide-slate-200" id="folder-list">
+        {% for folder in folders %}
+          <div class="px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50" data-folder-row="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-folder-bookmarked="{{ 1 if folder.is_bookmarked else 0 }}">
+            <a class="flex items-center gap-3 min-w-0 flex-1" href="{{ url_for('folder_view', folder_id=folder.id) }}">
+              <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                <span class="iconify" data-icon="mdi:folder-outline"></span>
+              </div>
+              <div class="min-w-0">
+                <div class="font-semibold text-slate-900 truncate">{{ folder.name }}</div>
+                <div class="text-xs text-slate-500">Created {{ folder.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+              </div>
+            </a>
+
+            <div class="flex items-center gap-2">
+              {% if folder.is_bookmarked %}
+                <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('unbookmark_folder', folder_id=folder.id) }}">
+                  <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Remove from Quick access">
+                    <span class="iconify" data-icon="mdi:bookmark-remove-outline"></span>
+                    <span>Unpin</span>
+                  </button>
+                </form>
+              {% else %}
+                <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('bookmark_folder', folder_id=folder.id) }}">
+                  <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Add to Quick access">
+                    <span class="iconify" data-icon="mdi:bookmark-outline"></span>
+                    <span>Pin</span>
+                  </button>
+                </form>
+              {% endif %}
+
+              <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('folder_view', folder_id=folder.id) }}" title="Open">
+                <span class="iconify" data-icon="mdi:chevron-right"></span>
+              </a>
+            </div>
+          </div>
+        {% else %}
+          <div class="p-6">
+            <div class="text-slate-900 font-semibold">No folders yet</div>
+            <div class="text-slate-500 mt-1">Use New to create your first folder.</div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="border-t border-slate-200"></div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500">
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Name</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Type</th>
+              <th class="text-right font-semibold px-4 py-3 border-b border-slate-200">Size</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Modified</th>
+              <th class="px-4 py-3 border-b border-slate-200"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in files %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">{{ f.original_filename }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.content_type or '-' }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right">
+                  <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
+                    <span class="iconify" data-icon="mdi:download"></span>
+                    <span>Download</span>
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td class="px-4 py-6 text-slate-500" colspan="5">No files in Vault (root).</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500">
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Name</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Type</th>
+              <th class="text-right font-semibold px-4 py-3 border-b border-slate-200">Size</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Modified</th>
+              <th class="px-4 py-3 border-b border-slate-200"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in files %}
+              <tr class="hover:bg-slate-50">
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">{{ f.original_filename }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.content_type or '-' }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right">
+                  <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
+                    <span class="iconify" data-icon="mdi:download"></span>
+                    <span>Download</span>
+                  </a>
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td class="px-4 py-6 text-slate-500" colspan="5">No files in this folder.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </div>
+
+  <script>
+    function toggleExplorerAdvancedSearch(){
+      var el = document.getElementById('explorer-advanced');
+      if(!el) return;
+      el.classList.toggle('hidden');
+    }
+
+    function updateCurrentFolderPin(folderId, isBookmarked){
+      var container = document.getElementById('current-folder-pin');
+      if(!container) return;
+      var currentId = container.getAttribute('data-current-folder-id');
+      if(!currentId || String(currentId) !== String(folderId)) return;
+      var form = container.querySelector('form.ajax-form');
+      if(!form) return;
+      var btn = form.querySelector('button');
+      if(!btn) return;
+      if(isBookmarked){
+        form.setAttribute('action', '/folder/' + folderId + '/unbookmark');
+        btn.setAttribute('title','Remove from Quick access');
+        btn.innerHTML = '<span class="iconify" data-icon="mdi:bookmark-remove-outline"></span><span>Unpin</span>';
+      }else{
+        form.setAttribute('action', '/folder/' + folderId + '/bookmark');
+        btn.setAttribute('title','Add to Quick access');
+        btn.innerHTML = '<span class="iconify" data-icon="mdi:bookmark-outline"></span><span>Pin</span>';
+      }
+    }
+    function toggleExplorerNewMenu(){
+      var el = document.getElementById('explorer-new-menu');
+      if(!el) return;
+      el.classList.toggle('hidden');
+    }
+    document.addEventListener('click', function(ev){
+      var menu = document.getElementById('explorer-new-menu');
+      if(menu && !menu.classList.contains('hidden')){
+        var inside = ev.target.closest('#explorer-new-menu');
+        var btn = ev.target.closest('button');
+        if(inside) return;
+        if(btn && btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('toggleExplorerNewMenu')) return;
+        menu.classList.add('hidden');
+      }
+    });
+
+    function sidebarUpsert(folderId, name){
+      var nav = document.getElementById('quick-access-folders');
+      if(!nav) return;
+      var existing = nav.querySelector('[data-sidebar-folder="'+folderId+'"]');
+      if(existing) return;
+
+      var a = document.createElement('a');
+      a.className = 'minimal-nav-item';
+      a.setAttribute('href', '/folder/' + folderId);
+      a.setAttribute('data-sidebar-folder', folderId);
+      a.innerHTML = '<span class="iconify" data-icon="mdi:folder-outline"></span><span class="truncate"></span>';
+      a.querySelector('span.truncate').textContent = name;
+      nav.insertBefore(a, nav.querySelector('[data-sidebar-search]'));
+    }
+
+    function sidebarRemove(folderId){
+      var nav = document.getElementById('quick-access-folders');
+      if(!nav) return;
+      var existing = nav.querySelector('[data-sidebar-folder="'+folderId+'"]');
+      if(existing) existing.remove();
+    }
+
+    function updateRowBookmarkState(folderId, isBookmarked){
+      var row = document.querySelector('[data-folder-row="'+folderId+'"]');
+      if(!row) return;
+      row.setAttribute('data-folder-bookmarked', isBookmarked ? '1' : '0');
+      var form = row.querySelector('form.ajax-form[action*="/bookmark"], form.ajax-form[action*="/unbookmark"]');
+      if(!form) return;
+      var btn = form.querySelector('button');
+      if(!btn) return;
+
+      if(isBookmarked){
+        form.setAttribute('action', '/folder/' + folderId + '/unbookmark');
+        btn.setAttribute('title','Remove from Quick access');
+        btn.innerHTML = '<span class="iconify" data-icon="mdi:bookmark-remove-outline"></span><span>Unpin</span>';
+      }else{
+        form.setAttribute('action', '/folder/' + folderId + '/bookmark');
+        btn.setAttribute('title','Add to Quick access');
+        btn.innerHTML = '<span class="iconify" data-icon="mdi:bookmark-outline"></span><span>Pin</span>';
+      }
+    }
+
+    async function submitAjaxForm(form){
+      var ajaxType = form.getAttribute('data-ajax') || 'json';
+      var url = form.getAttribute('action');
+
+      var options = { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } };
+      if(ajaxType === 'multipart'){
+        options.body = new FormData(form);
+      }else{
+        options.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
+        options.body = new URLSearchParams(new FormData(form)).toString();
+      }
+
+      var res = await fetch(url, options);
+      var data = await res.json().catch(function(){ return null; });
+      if(!res.ok || !data || data.ok === false){
+        alert((data && data.error) ? data.error : 'Request failed');
+        return;
+      }
+
+      if(url.includes('/bookmark') || url.includes('/unbookmark')){
+        var folderId = data.folder_id;
+        var name = data.name;
+        if(data.is_bookmarked){
+          sidebarUpsert(folderId, name);
+        }else{
+          sidebarRemove(folderId);
+        }
+        updateRowBookmarkState(folderId, data.is_bookmarked);
+        updateCurrentFolderPin(folderId, data.is_bookmarked);
+      }
+
+      if(url.endsWith('/folders')){
+        var folder = data.folder;
+        if(folder && folder.id){
+          var list = document.getElementById('folder-list');
+          if(list){
+            var div = document.createElement('div');
+            div.className = 'px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50';
+            div.setAttribute('data-folder-row', folder.id);
+            div.setAttribute('data-folder-name', folder.name);
+            div.setAttribute('data-folder-bookmarked', folder.is_bookmarked ? '1' : '0');
+            div.innerHTML = '<a class="flex items-center gap-3 min-w-0 flex-1" href="/folder/'+folder.id+'">'+
+              '<div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center"><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
+              '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate"></div><div class="text-xs text-slate-500"></div></div></a>'+
+              '<div class="flex items-center gap-2">'+
+              '<form method="post" class="ajax-form" data-ajax="json" action="/folder/'+folder.id+'/bookmark">'+
+              '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Add to Quick access"><span class="iconify" data-icon="mdi:bookmark-outline"></span><span>Pin</span></button>'+
+              '</form>'+
+              '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/folder/'+folder.id+'" title="Open"><span class="iconify" data-icon="mdi:chevron-right"></span></a>'+
+              '</div>';
+            div.querySelector('.truncate').textContent = folder.name;
+            div.querySelector('.text-xs').textContent = 'Created ' + folder.created_at;
+            list.prepend(div);
+          }
+
+          var select = document.querySelector('#explorer-new-menu select[name="folder_id"]');
+          if(select){
+            var opt = document.createElement('option');
+            opt.value = folder.id;
+            opt.textContent = folder.name;
+            select.appendChild(opt);
+          }
+        }
+        form.reset();
+        var menu = document.getElementById('explorer-new-menu');
+        if(menu) menu.classList.add('hidden');
+      }
+
+      if(url.includes('/upload')){
+        form.reset();
+        var menu = document.getElementById('explorer-new-menu');
+        if(menu) menu.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('submit', function(ev){
+      var form = ev.target.closest('form.ajax-form');
+      if(!form) return;
+      ev.preventDefault();
+      submitAjaxForm(form);
+    });
+  </script>
+{% endblock %}

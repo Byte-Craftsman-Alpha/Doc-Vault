@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Admin - Cloud Vault{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <style>
+      .admin-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+      .admin-input{width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:12px 16px;font-size:.875rem;color:#0f172a;background:#fff;transition:.15s}
+      .admin-input:focus{outline:none;border-color:#0f172a;box-shadow:0 0 0 4px rgba(15,23,42,.08)}
+      .admin-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:12px;padding:.6rem .9rem;font-weight:600;font-size:.875rem;transition:.15s}
+      .admin-btn-primary{background:#0f172a;color:#fff}
+      .admin-btn-primary:hover{background:#020617}
+      .admin-btn-soft{background:#f1f5f9;color:#0f172a;box-shadow:0 1px 2px rgba(15,23,42,.06)}
+      .admin-btn-soft:hover{background:#e2e8f0}
+      .admin-btn-danger{background:#fff1f2;color:#be123c}
+      .admin-btn-danger:hover{background:#ffe4e6}
+      .admin-pill{border-radius:999px;padding:.25rem .6rem;font-size:.75rem;font-weight:700}
+      .admin-table{width:100%;border-collapse:separate;border-spacing:0}
+      .admin-table th{background:#f8fafc;text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#64748b;padding:12px 14px;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+      .admin-table td{padding:12px 14px;border-bottom:1px solid #e2e8f0;color:#0f172a}
+      .flash{border:1px solid #e2e8f0;border-radius:14px;padding:.75rem 1rem}
+      .flash.success{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+      .flash.error{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+    </style>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+    <div class="p-4 sm:p-6 md:p-8 max-w-6xl mx-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-slate-900"></div>
+          <div>
+            <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500">Admin</div>
+            <div class="font-semibold text-slate-900">Cloud Vault Monitor</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <a class="admin-btn admin-btn-soft" href="{{ url_for('admin_dashboard') }}">
+            <span class="iconify" data-icon="mdi:account-group-outline"></span>
+            <span>Users</span>
+          </a>
+          <form method="post" action="{{ url_for('logout') }}">
+            <button class="admin-btn admin-btn-primary" type="submit">Logout</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="space-y-3 mb-6">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+      </div>
+
+      {% block content %}{% endblock %}
+    </div>
+  </body>
+</html>

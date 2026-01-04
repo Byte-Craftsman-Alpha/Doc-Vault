@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Search - Cloud Vault{% endblock %}
+
+{% block content %}
+  <div class="flex items-start justify-between gap-6 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-semibold text-slate-900">Search</h1>
+      <p class="text-slate-500 mt-1">Results across all folders. Use the left sidebar for basic and advanced filters.</p>
+    </div>
+  </div>
+
+  <div class="mt-6 minimal-card overflow-hidden">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between gap-3 flex-wrap">
+      <div class="font-semibold text-slate-900">Results</div>
+      <div class="text-sm text-slate-500">
+        {% if q or ext or filetype or date_from or date_to %}
+          Showing up to 200 matches
+        {% else %}
+          Enter a query to search
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="divide-y divide-slate-200">
+      {% for vf, folder in results %}
+        <div class="p-5 flex items-center justify-between gap-4 flex-wrap">
+          <div class="min-w-0">
+            <div class="font-semibold text-slate-900 truncate">{{ vf.original_filename }}</div>
+            <div class="text-xs text-slate-500 mt-1">
+              Folder:
+              <a class="text-indigo-700 font-semibold hover:underline" href="{{ url_for('folder_view', folder_id=folder.id) }}">{{ folder.name }}</a>
+              · Uploaded {{ vf.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
+              {% if vf.size_bytes %}
+                · {{ (vf.size_bytes / 1024) | round(1) }} KB
+              {% endif %}
+              {% if vf.content_type %}
+                · {{ vf.content_type }}
+              {% endif %}
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=vf.id) }}">
+              <span class="iconify" data-icon="mdi:download"></span>
+              <span>Download</span>
+            </a>
+          </div>
+        </div>
+      {% else %}
+        <div class="p-6">
+          {% if q or ext or filetype or date_from or date_to %}
+            <div class="text-slate-900 font-semibold">No matches</div>
+            <div class="text-slate-500 mt-1">Try a different keyword or clear advanced filters.</div>
+          {% else %}
+            <div class="text-slate-900 font-semibold">Search your vault</div>
+            <div class="text-slate-500 mt-1">Use the search box on the left to find files by partial name match.</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

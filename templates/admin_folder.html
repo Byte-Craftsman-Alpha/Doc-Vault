@@ -1,0 +1,46 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}Admin - {{ user.username }} / {{ folder.name }}{% endblock %}
+
+{% block content %}
+  <div>
+    <a class="text-slate-500 hover:text-slate-900 inline-flex items-center gap-2" href="{{ url_for('admin_user', user_id=user.id) }}">
+      <span class="iconify" data-icon="mdi:arrow-left"></span>
+      <span>Back to user</span>
+    </a>
+    <h1 class="text-2xl font-semibold text-slate-900 mt-2">{{ folder.name }}</h1>
+    <p class="text-slate-500 mt-1">Owner: {{ user.username }}</p>
+  </div>
+
+  <div class="admin-card overflow-hidden mt-6">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Uploaded</th>
+          <th>Size</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in files %}
+          <tr>
+            <td class="font-semibold">{{ f.original_filename }}</td>
+            <td class="text-slate-500">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="text-slate-500">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
+            <td class="text-right">
+              <a class="admin-btn admin-btn-soft" href="{{ url_for('download', file_id=f.id) }}">
+                <span class="iconify" data-icon="mdi:download"></span>
+                <span>Download</span>
+              </a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="4" class="text-slate-500">No files in this folder.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

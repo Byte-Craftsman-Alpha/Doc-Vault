@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Cloud Vault{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <style>
+      .minimal-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:.2s}
+      .minimal-card:hover{box-shadow:0 4px 12px rgba(15,23,42,.08)}
+      .minimal-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:12px;padding:.6rem .9rem;font-weight:600;font-size:.875rem;transition:.2s}
+      .minimal-btn:focus{outline:none;box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+      .minimal-btn-primary{color:#fff;background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)}
+      .minimal-btn-primary:hover{transform:translateY(-1px);background:linear-gradient(135deg,#4f46e5 0%,#4338ca 100%);box-shadow:0 8px 22px rgba(15,23,42,.12)}
+      .minimal-input{width:100%;border:1px solid #e2e8f0;border-radius:12px;padding:.65rem .85rem;font-size:.875rem;color:#0f172a;background:#fff;transition:.2s}
+      .minimal-input:focus{outline:none;border-color:#4f46e5;box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+      .minimal-nav-item{display:flex;align-items:center;gap:.6rem;border-radius:12px;padding:.6rem .8rem;color:#475569;font-weight:600;font-size:.875rem;transition:.2s}
+      .minimal-nav-item:hover{background:#f1f5f9;color:#0f172a}
+      .minimal-nav-item.active{background:#eef2ff;color:#4338ca}
+      .flash{border:1px solid #e2e8f0;border-radius:14px;padding:.75rem 1rem}
+      .flash.success{background:#ecfdf5;border-color:#a7f3d0;color:#065f46}
+      .flash.error{background:#fff1f2;border-color:#fecdd3;color:#9f1239}
+    </style>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+    <div class="grid grid-cols-1 md:grid-cols-[280px_1fr]">
+      <aside class="p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-white/60 backdrop-blur">
+        <div class="flex items-center gap-3 mb-8">
+          <div class="w-10 h-10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-gradient-to-br from-indigo-500 to-purple-600"></div>
+          <div>
+            <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500">Cloud Vault</div>
+            <div class="font-semibold text-slate-900">Your documents</div>
+          </div>
+        </div>
+
+        <div class="text-xs uppercase tracking-wider text-slate-500 mb-2">Quick access</div>
+        <nav class="space-y-1" id="quick-access-folders">
+          <a class="minimal-nav-item {% if request.endpoint in ['dashboard'] and not selected_folder_id %}active{% endif %}" href="{{ url_for('dashboard') }}">
+            <span class="iconify" data-icon="mdi:home-outline"></span>
+            <span>Vault</span>
+          </a>
+          {% for f in sidebar_folders %}
+            <a class="minimal-nav-item {% if selected_folder_id == f.id %}active{% endif %}" href="{{ url_for('folder_view', folder_id=f.id) }}" data-sidebar-folder="{{ f.id }}">
+              <span class="iconify" data-icon="mdi:folder-outline"></span>
+              <span class="truncate">{{ f.name }}</span>
+            </a>
+          {% endfor %}
+          <a class="minimal-nav-item {% if request.endpoint == 'search' %}active{% endif %}" href="{{ url_for('search') }}" data-sidebar-search>
+            <span class="iconify" data-icon="mdi:magnify"></span>
+            <span>Search</span>
+          </a>
+        </nav>
+
+        <div class="mt-10 minimal-card p-4">
+          <div class="text-xs uppercase tracking-wider text-slate-500">Signed in as</div>
+          <div class="mt-2 font-semibold text-slate-900">{{ current_user.username }}</div>
+          <form class="mt-4" method="post" action="{{ url_for('logout') }}">
+            <button class="minimal-btn w-full bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">Logout</button>
+          </form>
+        </div>
+      </aside>
+
+      <main class="p-6 md:p-8">
+        <div class="space-y-3 mb-6">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, message in messages %}
+                <div class="flash {{ category }}">{{ message }}</div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+        </div>
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <script></script>
+  </body>
+</html>
