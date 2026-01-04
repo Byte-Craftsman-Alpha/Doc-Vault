@@ -265,12 +265,12 @@
                           <span class="iconify" data-icon="mdi:share-variant-outline"></span>
                           <span>Share</span>
                         </button>
-                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
-                          <span>Move</span>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="solar:scissors-square-outline"></span>
+                          <span>Cut</span>
                         </button>
-                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="solar:copy-line-duotone"></span>
                           <span>Copy</span>
                         </button>
                       </div>
@@ -323,12 +323,12 @@
                         <span class="iconify" data-icon="mdi:share-variant-outline"></span>
                         <span>Share</span>
                       </button>
-                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
-                        <span>Move</span>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="solar:scissors-square-outline"></span>
+                        <span>Cut</span>
                       </button>
-                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="solar:copy-line-duotone"></span>
                         <span>Copy</span>
                       </button>
                     </div>
@@ -383,12 +383,12 @@
                           <span class="iconify" data-icon="mdi:share-variant-outline"></span>
                           <span>Share</span>
                         </button>
-                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
-                          <span>Move</span>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="solar:scissors-square-outline"></span>
+                          <span>Cut</span>
                         </button>
-                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="solar:copy-line-duotone"></span>
                           <span>Copy</span>
                         </button>
                       </div>
@@ -441,12 +441,12 @@
                         <span class="iconify" data-icon="mdi:share-variant-outline"></span>
                         <span>Share</span>
                       </button>
-                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
-                        <span>Move</span>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="solar:scissors-square-outline"></span>
+                        <span>Cut</span>
                       </button>
-                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="solar:copy-line-duotone"></span>
                         <span>Copy</span>
                       </button>
                     </div>
@@ -492,6 +492,10 @@
           <span class="iconify text-slate-500" data-icon="mdi:folder-open-outline"></span>
           <span class="text-sm font-semibold">Open</span>
         </button>
+        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" data-context-action="paste" id="context-paste-folder-btn" aria-disabled="true" data-disabled="1">
+          <span class="iconify text-slate-500" data-icon="solar:clipboard-add-bold-duotone"></span>
+          <span class="text-sm font-semibold">Paste</span>
+        </button>
         <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_share">
           <span class="iconify text-slate-500" data-icon="mdi:share-variant-outline"></span>
           <span class="text-sm font-semibold">Share</span>
@@ -519,6 +523,10 @@
       <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="upload_file">
         <span class="iconify text-slate-500" data-icon="mdi:upload"></span>
         <span class="text-sm font-semibold">Upload file</span>
+      </button>
+      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" data-context-action="paste" id="context-paste-btn" aria-disabled="true" data-disabled="1">
+        <span class="iconify text-slate-500" data-icon="solar:clipboard-add-bold-duotone"></span>
+        <span class="text-sm font-semibold">Paste</span>
       </button>
       <div class="h-px bg-slate-200 my-1"></div>
       <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="view">
@@ -688,6 +696,41 @@
       var m = document.getElementById('explorer-context-menu');
       var b = document.getElementById('context-menu-backdrop');
       if(!m || !b) return;
+
+      var pasteBtn = document.getElementById('context-paste-btn');
+      var pasteFolderBtn = document.getElementById('context-paste-folder-btn');
+      var hasCtxFolder = !!(m.getAttribute('data-context-folder-id') || '');
+      if(pasteBtn){
+        var clip = getFileClipboard();
+        if(clip && clip.fileId && (clip.mode === 'cut' || clip.mode === 'copy')){
+          pasteBtn.setAttribute('aria-disabled','false');
+          pasteBtn.removeAttribute('data-disabled');
+          pasteBtn.classList.remove('text-slate-400','cursor-not-allowed');
+          pasteBtn.classList.add('hover:bg-slate-100','text-slate-800');
+        }else{
+          pasteBtn.setAttribute('aria-disabled','true');
+          pasteBtn.setAttribute('data-disabled','1');
+          pasteBtn.classList.add('text-slate-400','cursor-not-allowed');
+          pasteBtn.classList.remove('hover:bg-slate-100','text-slate-800');
+        }
+        pasteBtn.classList.toggle('hidden', hasCtxFolder);
+      }
+
+      if(pasteFolderBtn){
+        var clip2 = getFileClipboard();
+        if(clip2 && clip2.fileId && (clip2.mode === 'cut' || clip2.mode === 'copy')){
+          pasteFolderBtn.setAttribute('aria-disabled','false');
+          pasteFolderBtn.removeAttribute('data-disabled');
+          pasteFolderBtn.classList.remove('text-slate-400','cursor-not-allowed');
+          pasteFolderBtn.classList.add('hover:bg-slate-100','text-slate-800');
+        }else{
+          pasteFolderBtn.setAttribute('aria-disabled','true');
+          pasteFolderBtn.setAttribute('data-disabled','1');
+          pasteFolderBtn.classList.add('text-slate-400','cursor-not-allowed');
+          pasteFolderBtn.classList.remove('hover:bg-slate-100','text-slate-800');
+        }
+        pasteFolderBtn.classList.toggle('hidden', !hasCtxFolder);
+      }
 
       var folderSection = document.getElementById('context-folder-actions');
       if(folderSection){
@@ -995,8 +1038,8 @@
                 '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:trash-can-outline"></span><span>Delete</span></button>'+
                 '<div class="h-px bg-slate-200 my-1"></div>'+
                 '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:share-variant-outline"></span><span>Share</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Move</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Copy</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="'+file.id+'"><span class="iconify" data-icon="solar:scissors-square-outline"></span><span>Cut</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="'+file.id+'"><span class="iconify" data-icon="solar:copy-line-duotone"></span><span>Copy</span></button>'+
               '</div>'+
             '</div>'+
           '</div>'+
@@ -1032,8 +1075,8 @@
                 '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:trash-can-outline"></span><span>Delete</span></button>'+
                 '<div class="h-px bg-slate-200 my-1"></div>'+
                 '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:share-variant-outline"></span><span>Share</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Move</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Copy</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="'+file.id+'"><span class="iconify" data-icon="solar:scissors-square-outline"></span><span>Cut</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="'+file.id+'"><span class="iconify" data-icon="solar:copy-line-duotone"></span><span>Copy</span></button>'+
               '</div>'+
             '</div>'+
           '</div>'+
@@ -1165,6 +1208,9 @@
         var ctxFolderId = cm ? (cm.getAttribute('data-context-folder-id') || '') : '';
         var ctxFolderOpenUrl = cm ? (cm.getAttribute('data-context-folder-open-url') || '') : '';
         var ctxFolderBookmarked = cm ? (cm.getAttribute('data-context-folder-bookmarked') === '1') : false;
+        var rootFolderId = '{{ root_folder_id or "" }}';
+        var currentFolderEl = document.getElementById('current-folder-pin');
+        var selectedFolderId = currentFolderEl ? (currentFolderEl.getAttribute('data-current-folder-id') || '') : '';
         hideExplorerContextMenu();
 
         if(a === 'folder_open'){
@@ -1226,6 +1272,16 @@
             updateRowBookmarkState(folderId, data.is_bookmarked);
             updateCurrentFolderPin(folderId, data.is_bookmarked);
           });
+          return;
+        }
+
+        if(a === 'paste'){
+          if(ctxAction.getAttribute('data-disabled') === '1' || ctxAction.getAttribute('aria-disabled') === 'true'){
+            notify('Nothing to paste. Use Copy/Cut on a file first.');
+            return;
+          }
+          var target = getPasteTargetFromUI();
+          await performPasteInto(target.folderId, target.folderName);
           return;
         }
 
@@ -1360,6 +1416,33 @@
         updateExplorerSortMenuUI();
         applyExplorerSortFromState();
         hideExplorerContextMenu();
+        return;
+      }
+    });
+
+    document.addEventListener('keydown', async function(ev){
+      var k = (ev.key || '').toLowerCase();
+      if(!(ev.ctrlKey || ev.metaKey)) return;
+      var active = document.activeElement;
+      if(active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
+
+      if(k === 'c' || k === 'x'){
+        var fileId = getSelectedFileId();
+        if(!fileId) return;
+        ev.preventDefault();
+        var mode = (k === 'x') ? 'cut' : 'copy';
+        var fromFolderId = getCurrentFolderId();
+        window.__fileClipboard = { mode: mode, fileId: String(fileId), fromFolderId: String(fromFolderId) };
+        saveFileClipboard(window.__fileClipboard);
+        await writeDeviceClipboard(window.__fileClipboard);
+        notify((mode === 'cut' ? 'Cut' : 'Copied') + '. Now paste with Ctrl+V or context menu.');
+        return;
+      }
+
+      if(k === 'v'){
+        ev.preventDefault();
+        var target = getPasteTargetFromUI();
+        await performPasteInto(target.folderId, target.folderName);
         return;
       }
     });
@@ -1624,11 +1707,209 @@
       }
     }
 
+    function notify(msg){
+      if(!msg) return;
+      alert(msg);
+    }
+
+    function loadFileClipboard(){
+      try{
+        var raw = localStorage.getItem('vault_file_clipboard');
+        if(!raw) return null;
+        var obj = JSON.parse(raw);
+        if(!obj || !obj.fileId || !(obj.mode === 'cut' || obj.mode === 'copy')) return null;
+        return obj;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function buildDeviceClipboardPayload(obj){
+      try{
+        return 'VAULTCLIP:' + JSON.stringify(obj);
+      }catch(e){
+        return '';
+      }
+    }
+
+    async function writeDeviceClipboard(obj){
+      try{
+        if(!obj) return false;
+        var payload = buildDeviceClipboardPayload(obj);
+        if(!payload) return false;
+        await navigator.clipboard.writeText(payload);
+        return true;
+      }catch(e){
+        return false;
+      }
+    }
+
+    async function readDeviceClipboard(){
+      try{
+        var txt = await navigator.clipboard.readText();
+        if(!txt) return null;
+        txt = String(txt);
+        if(txt.indexOf('VAULTCLIP:') !== 0) return null;
+        var raw = txt.slice('VAULTCLIP:'.length);
+        var obj = JSON.parse(raw);
+        if(!obj || !obj.fileId || !(obj.mode === 'cut' || obj.mode === 'copy')) return null;
+        return obj;
+      }catch(e){
+        return null;
+      }
+    }
+
+    function saveFileClipboard(obj){
+      try{
+        if(!obj){
+          localStorage.removeItem('vault_file_clipboard');
+          return;
+        }
+        localStorage.setItem('vault_file_clipboard', JSON.stringify(obj));
+      }catch(e){
+      }
+    }
+
+    function getFileClipboard(){
+      if(window.__fileClipboard && window.__fileClipboard.fileId) return window.__fileClipboard;
+      var restored = loadFileClipboard();
+      if(restored){
+        window.__fileClipboard = restored;
+        return restored;
+      }
+      return null;
+    }
+
+    function clearFileClipboard(){
+      window.__fileClipboard = null;
+      saveFileClipboard(null);
+    }
+
+    (function(){
+      var restored = loadFileClipboard();
+      if(restored) window.__fileClipboard = restored;
+    })();
+
+    function getSelectedFileId(){
+      if(!__selectedEl) return '';
+      if(__selectedEl.getAttribute){
+        var selectable = __selectedEl.getAttribute('data-selectable') || '';
+        if(selectable !== 'file') return '';
+        var rowId = __selectedEl.getAttribute('data-file-row');
+        if(rowId) return String(rowId);
+        var tileId = __selectedEl.getAttribute('data-file-tile');
+        if(tileId) return String(tileId);
+      }
+      return '';
+    }
+
+    function getCurrentFolderId(){
+      var currentFolderEl = document.getElementById('current-folder-pin');
+      var selectedFolderId = currentFolderEl ? (currentFolderEl.getAttribute('data-current-folder-id') || '') : '';
+      var rootFolderId = '{{ root_folder_id or "" }}';
+      return selectedFolderId ? selectedFolderId : rootFolderId;
+    }
+
+    function getPasteTargetFromUI(){
+      var cm = document.getElementById('explorer-context-menu');
+      var ctxFolderId = cm ? (cm.getAttribute('data-context-folder-id') || '') : '';
+      var targetFolderId = ctxFolderId || getCurrentFolderId();
+      var targetFolderName = '';
+      if(ctxFolderId){
+        var folderEl = document.querySelector('[data-folder-row="'+ctxFolderId+'"], [data-folder-tile="'+ctxFolderId+'"]');
+        targetFolderName = folderEl ? (folderEl.getAttribute('data-folder-name') || '') : '';
+      }
+      if(!targetFolderName){
+        targetFolderName = (getCurrentFolderId() === '{{ root_folder_id or "" }}') ? 'Vault (root)' : 'this folder';
+      }
+      return { folderId: targetFolderId, folderName: targetFolderName };
+    }
+
+    async function performPasteInto(targetFolderId, targetFolderName){
+      if(!targetFolderId) return;
+
+      var clip = getFileClipboard();
+      if(!clip){
+        var fromDevice = await readDeviceClipboard();
+        if(fromDevice){
+          window.__fileClipboard = fromDevice;
+          saveFileClipboard(fromDevice);
+          clip = fromDevice;
+        }
+      }
+
+      if(!clip || !clip.fileId || !(clip.mode === 'cut' || clip.mode === 'copy')){
+        notify('Nothing to paste. Use Copy/Cut on a file first.');
+        return;
+      }
+
+      if(clip.mode === 'cut' && String(targetFolderId) === String(clip.fromFolderId)){
+        clearFileClipboard();
+        notify('Clipboard cleared (same folder).');
+        return;
+      }
+
+      var currentFolderId = getCurrentFolderId();
+      var isCurrentTarget = String(targetFolderId) === String(currentFolderId);
+
+      var endpoint = (clip.mode === 'cut') ? ('/file/' + clip.fileId + '/move') : ('/file/' + clip.fileId + '/copy');
+      var dataPaste = await postAction(endpoint, { folder_id: targetFolderId });
+      if(!dataPaste || !dataPaste.file) return;
+
+      if(clip.mode === 'cut'){
+        removeFileRow(clip.fileId);
+        var oldTile = document.querySelector('[data-file-tile="'+clip.fileId+'"]');
+        if(oldTile) oldTile.remove();
+        if(isCurrentTarget){
+          addFileRowTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-table-body' : 'folder-files-table-body', dataPaste.file);
+          addFileTileTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-tiles' : 'folder-files-tiles', dataPaste.file);
+        }
+        clearFileClipboard();
+        notify('Moved to ' + (targetFolderName || 'destination') + '.');
+        return;
+      }
+
+      if(isCurrentTarget){
+        addFileRowTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-table-body' : 'folder-files-table-body', dataPaste.file);
+        addFileTileTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-tiles' : 'folder-files-tiles', dataPaste.file);
+      }
+      notify('Copied to ' + (targetFolderName || 'destination') + '.');
+    }
+
     document.addEventListener('click', async function(ev){
       var btn = ev.target.closest('button[data-action]');
       if(!btn) return;
       var action = btn.getAttribute('data-action');
       if(!action) return;
+
+      if(action === 'file-cut' || action === 'file-copy'){
+        ev.preventDefault();
+        closeAllActionMenus();
+        var fileIdClip = btn.getAttribute('data-file-id');
+        if(!fileIdClip) return;
+        var currentFolderEl = document.getElementById('current-folder-pin');
+        var selectedFolderId = currentFolderEl ? (currentFolderEl.getAttribute('data-current-folder-id') || '') : '';
+        var rootFolderId = '{{ root_folder_id or "" }}';
+        var fromFolderId = selectedFolderId ? selectedFolderId : rootFolderId;
+        window.__fileClipboard = { mode: (action === 'file-cut') ? 'cut' : 'copy', fileId: String(fileIdClip), fromFolderId: String(fromFolderId) };
+        saveFileClipboard(window.__fileClipboard);
+
+        await writeDeviceClipboard(window.__fileClipboard);
+
+        var rowClip = document.querySelector('[data-file-row="'+fileIdClip+'"]');
+        var tileClip = document.querySelector('[data-file-tile="'+fileIdClip+'"]');
+        var nameClip = '';
+        if(rowClip){
+          var n = rowClip.querySelector('[data-file-name]');
+          nameClip = n ? n.textContent : '';
+        }else if(tileClip){
+          var n2 = tileClip.querySelector('[data-file-name]');
+          nameClip = n2 ? n2.textContent : '';
+        }
+        if(nameClip) await copyText(nameClip);
+        notify(((action === 'file-cut') ? 'Cut' : 'Copied') + (nameClip ? (': ' + nameClip) : '') + '. Now right-click a folder and choose Paste.');
+        return;
+      }
 
       if(action === 'folder-rename'){
         ev.preventDefault();

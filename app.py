@@ -1,4 +1,5 @@
 import os
+import shutil
 import uuid
 from datetime import date, datetime, timedelta
 from functools import wraps
@@ -835,6 +836,127 @@ def create_app():
         if wants_json(request):
             return jsonify({"ok": True, "file": {"id": vf.id, "original_filename": vf.original_filename}})
 
+        return redirect(request.referrer or url_for("dashboard"))
+
+    @app.post("/file/<int:file_id>/move")
+    @login_required
+    def move_file(file_id: int):
+        if current_user.is_admin:
+            abort(403)
+        vf = VaultFile.query.filter_by(id=file_id, user_id=current_user.id).first_or_404()
+        folder_id_raw = request.form.get("folder_id")
+        try:
+            target_folder_id = int(folder_id_raw)
+        except (TypeError, ValueError):
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Invalid target folder."}), 400
+            flash("Invalid target folder.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        target_folder = Folder.query.filter_by(id=target_folder_id, user_id=current_user.id).first_or_404()
+        if target_folder.name == ROOT_FOLDER_NAME:
+            target_folder = get_or_create_root_folder(current_user.id)
+            target_folder_id = target_folder.id
+
+        src_path = file_disk_path(app.config["UPLOAD_ROOT"], vf.user_id, vf.folder_id, vf.stored_filename)
+        dst_dir = os.path.join(app.config["UPLOAD_ROOT"], str(vf.user_id), str(target_folder_id))
+        os.makedirs(dst_dir, exist_ok=True)
+        dst_path = os.path.join(dst_dir, vf.stored_filename)
+
+        try:
+            if os.path.exists(src_path):
+                shutil.move(src_path, dst_path)
+        except Exception:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Move failed."}), 500
+            flash("Move failed.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        vf.folder_id = target_folder_id
+        db.session.commit()
+        if wants_json(request):
+            return jsonify(
+                {
+                    "ok": True,
+                    "file": {
+                        "id": vf.id,
+                        "folder_id": vf.folder_id,
+                        "original_filename": vf.original_filename,
+                        "content_type": vf.content_type,
+                        "size_bytes": vf.size_bytes,
+                        "uploaded_at": vf.uploaded_at.strftime("%Y-%m-%d %H:%M"),
+                    },
+                }
+            )
+        return redirect(request.referrer or url_for("dashboard"))
+
+    @app.post("/file/<int:file_id>/copy")
+    @login_required
+    def copy_file(file_id: int):
+        if current_user.is_admin:
+            abort(403)
+        vf = VaultFile.query.filter_by(id=file_id, user_id=current_user.id).first_or_404()
+        folder_id_raw = request.form.get("folder_id")
+        try:
+            target_folder_id = int(folder_id_raw)
+        except (TypeError, ValueError):
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Invalid target folder."}), 400
+            flash("Invalid target folder.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        target_folder = Folder.query.filter_by(id=target_folder_id, user_id=current_user.id).first_or_404()
+        if target_folder.name == ROOT_FOLDER_NAME:
+            target_folder = get_or_create_root_folder(current_user.id)
+            target_folder_id = target_folder.id
+
+        src_path = file_disk_path(app.config["UPLOAD_ROOT"], vf.user_id, vf.folder_id, vf.stored_filename)
+        safe_name = secure_filename(vf.original_filename)
+        new_stored = f"{uuid.uuid4().hex}__{safe_name or 'file'}"
+        dst_dir = os.path.join(app.config["UPLOAD_ROOT"], str(vf.user_id), str(target_folder_id))
+        os.makedirs(dst_dir, exist_ok=True)
+        dst_path = os.path.join(dst_dir, new_stored)
+
+        try:
+            if os.path.exists(src_path):
+                shutil.copy2(src_path, dst_path)
+        except Exception:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Copy failed."}), 500
+            flash("Copy failed.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        size_bytes = 0
+        try:
+            size_bytes = os.path.getsize(dst_path)
+        except OSError:
+            size_bytes = int(vf.size_bytes or 0)
+
+        record = VaultFile(
+            user_id=current_user.id,
+            folder_id=target_folder_id,
+            original_filename=vf.original_filename,
+            stored_filename=new_stored,
+            content_type=vf.content_type,
+            size_bytes=size_bytes,
+        )
+        db.session.add(record)
+        db.session.commit()
+
+        if wants_json(request):
+            return jsonify(
+                {
+                    "ok": True,
+                    "file": {
+                        "id": record.id,
+                        "folder_id": record.folder_id,
+                        "original_filename": record.original_filename,
+                        "content_type": record.content_type,
+                        "size_bytes": record.size_bytes,
+                        "uploaded_at": record.uploaded_at.strftime("%Y-%m-%d %H:%M"),
+                    },
+                }
+            )
         return redirect(request.referrer or url_for("dashboard"))
 
     @app.post("/file/<int:file_id>/delete")
