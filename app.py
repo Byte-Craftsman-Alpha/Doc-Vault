@@ -1,6 +1,6 @@
 import os
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from functools import wraps
 
 from flask import Flask, abort, flash, jsonify, redirect, render_template, request, send_file, url_for
@@ -18,6 +18,10 @@ login_manager.login_view = "login"
 
 DEFAULT_FOLDERS = ["Documents", "Pictures", "Videos"]
 ROOT_FOLDER_NAME = "__root__"
+
+
+def file_disk_path(upload_root: str, user_id: int, folder_id: int, stored_filename: str) -> str:
+    return os.path.join(upload_root, str(user_id), str(folder_id), stored_filename)
 
 
 class User(db.Model, UserMixin):
@@ -47,6 +51,17 @@ class VaultFile(db.Model):
     content_type = db.Column(db.String(255), nullable=True)
     size_bytes = db.Column(db.Integer, nullable=False, default=0)
     uploaded_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+
+class ShareLink(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    token = db.Column(db.String(64), nullable=False, unique=True, index=True)
+    item_type = db.Column(db.String(16), nullable=False)  # 'file' | 'folder'
+    item_id = db.Column(db.Integer, nullable=False, index=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    expires_at = db.Column(db.DateTime, nullable=False)
+    revoked_at = db.Column(db.DateTime, nullable=True)
 
 
 @login_manager.user_loader
@@ -214,6 +229,185 @@ def create_app():
             root_folder_id=root_folder.id,
         )
 
+    def build_public_share_url(token: str) -> str:
+        return url_for("shared_access", token=token, _external=True)
+
+    def parse_share_minutes(raw: str | None) -> int:
+        if raw is None:
+            return 30
+        try:
+            minutes = int(str(raw).strip())
+        except (TypeError, ValueError):
+            return 30
+        if minutes < 1:
+            minutes = 1
+        if minutes > 60 * 24 * 7:
+            minutes = 60 * 24 * 7
+        return minutes
+
+    def get_active_share_or_404(token: str) -> ShareLink:
+        link = ShareLink.query.filter_by(token=token).first_or_404()
+        if link.revoked_at is not None:
+            abort(404)
+        if link.expires_at <= datetime.utcnow():
+            abort(404)
+        return link
+
+    @app.post("/share")
+    @login_required
+    def create_share():
+        if current_user.is_admin:
+            abort(403)
+
+        item_type = (request.form.get("item_type") or "").strip().lower()
+        item_id_raw = (request.form.get("item_id") or "").strip()
+        minutes = parse_share_minutes(request.form.get("minutes"))
+        try:
+            item_id = int(item_id_raw)
+        except (TypeError, ValueError):
+            return jsonify({"ok": False, "error": "Invalid item."}), 400
+
+        if item_type not in {"file", "folder"}:
+            return jsonify({"ok": False, "error": "Invalid item type."}), 400
+
+        if item_type == "file":
+            vf = VaultFile.query.filter_by(id=item_id).first()
+            if not vf or vf.user_id != current_user.id:
+                return jsonify({"ok": False, "error": "File not found."}), 404
+        else:
+            folder = Folder.query.filter_by(id=item_id, user_id=current_user.id).first()
+            if not folder or folder.name == ROOT_FOLDER_NAME:
+                return jsonify({"ok": False, "error": "Folder not found."}), 404
+
+        token = uuid.uuid4().hex
+        expires_at = datetime.utcnow() + timedelta(minutes=minutes)
+        link = ShareLink(
+            user_id=current_user.id,
+            token=token,
+            item_type=item_type,
+            item_id=item_id,
+            expires_at=expires_at,
+        )
+        db.session.add(link)
+        db.session.commit()
+
+        return jsonify(
+            {
+                "ok": True,
+                "share": {
+                    "id": link.id,
+                    "token": link.token,
+                    "url": build_public_share_url(link.token),
+                    "expires_at": link.expires_at.strftime("%Y-%m-%d %H:%M"),
+                    "minutes": minutes,
+                    "item_type": link.item_type,
+                    "item_id": link.item_id,
+                },
+            }
+        )
+
+    @app.get("/s/<token>")
+    def shared_access(token: str):
+        link = get_active_share_or_404(token)
+        if link.item_type == "file":
+            vf = VaultFile.query.filter_by(id=link.item_id, user_id=link.user_id).first_or_404()
+            target_path = os.path.join(app.config["UPLOAD_ROOT"], str(vf.user_id), str(vf.folder_id), vf.stored_filename)
+            if not os.path.exists(target_path):
+                abort(404)
+            return send_file(
+                target_path,
+                as_attachment=True,
+                download_name=vf.original_filename,
+                mimetype=vf.content_type or "application/octet-stream",
+            )
+
+        folder = Folder.query.filter_by(id=link.item_id, user_id=link.user_id).first_or_404()
+        if folder.name == ROOT_FOLDER_NAME:
+            abort(404)
+        files = VaultFile.query.filter_by(user_id=link.user_id, folder_id=folder.id).order_by(VaultFile.uploaded_at.desc())
+        return render_template(
+            "shared_folder.html",
+            share=link,
+            folder=folder,
+            files=files,
+            token=token,
+        )
+
+    @app.get("/s/<token>/file/<int:file_id>/download")
+    def shared_folder_download(token: str, file_id: int):
+        link = get_active_share_or_404(token)
+        if link.item_type != "folder":
+            abort(404)
+
+        vf = VaultFile.query.filter_by(id=file_id, user_id=link.user_id, folder_id=link.item_id).first_or_404()
+        target_path = os.path.join(app.config["UPLOAD_ROOT"], str(vf.user_id), str(vf.folder_id), vf.stored_filename)
+        if not os.path.exists(target_path):
+            abort(404)
+        return send_file(
+            target_path,
+            as_attachment=True,
+            download_name=vf.original_filename,
+            mimetype=vf.content_type or "application/octet-stream",
+        )
+
+    @app.get("/shared")
+    @login_required
+    def shared_links():
+        if current_user.is_admin:
+            abort(403)
+        now = datetime.utcnow()
+        links = (
+            ShareLink.query.filter_by(user_id=current_user.id)
+            .order_by(ShareLink.created_at.desc())
+            .all()
+        )
+
+        rows = []
+        for link in links:
+            status = "active"
+            if link.revoked_at is not None:
+                status = "revoked"
+            elif link.expires_at <= now:
+                status = "expired"
+
+            item_name = "-"
+            if link.item_type == "file":
+                vf = VaultFile.query.filter_by(id=link.item_id, user_id=current_user.id).first()
+                if vf:
+                    item_name = vf.original_filename
+            else:
+                folder = Folder.query.filter_by(id=link.item_id, user_id=current_user.id).first()
+                if folder:
+                    item_name = folder.name
+
+            rows.append(
+                {
+                    "id": link.id,
+                    "item_type": link.item_type,
+                    "item_id": link.item_id,
+                    "item_name": item_name,
+                    "created_at": link.created_at.strftime("%Y-%m-%d %H:%M"),
+                    "expires_at": link.expires_at.strftime("%Y-%m-%d %H:%M"),
+                    "revoked_at": link.revoked_at.strftime("%Y-%m-%d %H:%M") if link.revoked_at else "",
+                    "status": status,
+                    "url": build_public_share_url(link.token),
+                }
+            )
+
+        return render_template("shared_links.html", rows=rows)
+
+    @app.post("/shared/<int:share_id>/revoke")
+    @login_required
+    def revoke_share(share_id: int):
+        if current_user.is_admin:
+            abort(403)
+        link = ShareLink.query.filter_by(id=share_id, user_id=current_user.id).first_or_404()
+        link.revoked_at = datetime.utcnow()
+        db.session.commit()
+        if wants_json(request):
+            return jsonify({"ok": True})
+        return redirect(url_for("shared_links"))
+
     @app.get("/search")
     @login_required
     def search():
@@ -250,6 +444,28 @@ def create_app():
                 query = query.filter(VaultFile.uploaded_at <= datetime(dt.year, dt.month, dt.day, 23, 59, 59))
 
             results = query.order_by(VaultFile.uploaded_at.desc()).limit(200).all()
+
+        if wants_json(request):
+            payload = []
+            for vf, folder in results[:50]:
+                folder_label = folder.name
+                if folder_label == ROOT_FOLDER_NAME:
+                    folder_label = "Vault (root)"
+                payload.append(
+                    {
+                        "id": vf.id,
+                        "name": vf.original_filename,
+                        "content_type": vf.content_type,
+                        "size_bytes": int(vf.size_bytes or 0),
+                        "uploaded_at": vf.uploaded_at.strftime("%Y-%m-%d %H:%M"),
+                        "folder": {"id": folder.id, "name": folder_label},
+                        "download_url": url_for("download", file_id=vf.id),
+                        "open_folder_url": url_for("dashboard")
+                        if folder.name == ROOT_FOLDER_NAME
+                        else url_for("folder_view", folder_id=folder.id),
+                    }
+                )
+            return jsonify({"ok": True, "q": q, "results": payload})
 
         return render_template(
             "search.html",
@@ -319,6 +535,86 @@ def create_app():
 
         next_url = request.form.get("next") or request.referrer or url_for("dashboard")
         return redirect(next_url)
+
+    @app.post("/folder/<int:folder_id>/rename")
+    @login_required
+    def rename_folder(folder_id: int):
+        if current_user.is_admin:
+            abort(403)
+        folder = Folder.query.filter_by(id=folder_id, user_id=current_user.id).first_or_404()
+        if folder.name == ROOT_FOLDER_NAME:
+            abort(403)
+
+        new_name = (request.form.get("name") or "").strip()
+        if not new_name:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Folder name is required."}), 400
+            flash("Folder name is required.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        if new_name == ROOT_FOLDER_NAME:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Folder name is not allowed."}), 400
+            flash("Folder name is not allowed.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        folder.name = new_name
+        try:
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Folder name already exists."}), 400
+            flash("Folder name already exists.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        if wants_json(request):
+            return jsonify({"ok": True, "folder": {"id": folder.id, "name": folder.name, "is_bookmarked": bool(folder.is_bookmarked)}})
+
+        return redirect(url_for("folder_view", folder_id=folder.id))
+
+    @app.post("/folder/<int:folder_id>/delete")
+    @login_required
+    def delete_folder(folder_id: int):
+        if current_user.is_admin:
+            abort(403)
+        folder = Folder.query.filter_by(id=folder_id, user_id=current_user.id).first_or_404()
+        if folder.name == ROOT_FOLDER_NAME:
+            abort(403)
+
+        files = VaultFile.query.filter_by(user_id=current_user.id, folder_id=folder.id).all()
+        for vf in files:
+            path = file_disk_path(app.config["UPLOAD_ROOT"], vf.user_id, vf.folder_id, vf.stored_filename)
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except OSError:
+                pass
+            db.session.delete(vf)
+
+        folder_path = os.path.join(app.config["UPLOAD_ROOT"], str(current_user.id), str(folder.id))
+        try:
+            if os.path.isdir(folder_path):
+                for root, _dirs, filenames in os.walk(folder_path, topdown=False):
+                    for fn in filenames:
+                        try:
+                            os.remove(os.path.join(root, fn))
+                        except OSError:
+                            pass
+                try:
+                    os.rmdir(folder_path)
+                except OSError:
+                    pass
+        except OSError:
+            pass
+
+        db.session.delete(folder)
+        db.session.commit()
+
+        if wants_json(request):
+            return jsonify({"ok": True, "folder_id": folder_id})
+
+        return redirect(url_for("dashboard"))
 
     @app.post("/folder/<int:folder_id>/unbookmark")
     @login_required
@@ -518,6 +814,50 @@ def create_app():
             download_name=vf.original_filename,
             mimetype=vf.content_type or "application/octet-stream",
         )
+
+    @app.post("/file/<int:file_id>/rename")
+    @login_required
+    def rename_file(file_id: int):
+        vf = VaultFile.query.filter_by(id=file_id).first_or_404()
+        if not current_user.is_admin and vf.user_id != current_user.id:
+            abort(403)
+
+        new_name = (request.form.get("name") or "").strip()
+        if not new_name:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "File name is required."}), 400
+            flash("File name is required.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        vf.original_filename = new_name
+        db.session.commit()
+
+        if wants_json(request):
+            return jsonify({"ok": True, "file": {"id": vf.id, "original_filename": vf.original_filename}})
+
+        return redirect(request.referrer or url_for("dashboard"))
+
+    @app.post("/file/<int:file_id>/delete")
+    @login_required
+    def delete_file(file_id: int):
+        vf = VaultFile.query.filter_by(id=file_id).first_or_404()
+        if not current_user.is_admin and vf.user_id != current_user.id:
+            abort(403)
+
+        path = file_disk_path(app.config["UPLOAD_ROOT"], vf.user_id, vf.folder_id, vf.stored_filename)
+        try:
+            if os.path.exists(path):
+                os.remove(path)
+        except OSError:
+            pass
+
+        db.session.delete(vf)
+        db.session.commit()
+
+        if wants_json(request):
+            return jsonify({"ok": True, "file_id": file_id})
+
+        return redirect(request.referrer or url_for("dashboard"))
 
     @app.get("/admin")
     @admin_required

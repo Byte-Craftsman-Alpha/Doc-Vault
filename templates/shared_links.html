@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Shared - Cloud Vault{% endblock %}
+
+{% block content %}
+  <div class="flex-1 min-h-0 flex flex-col">
+    <div class="minimal-card p-5">
+      <div class="flex items-center justify-between gap-4">
+        <div>
+          <div class="text-slate-900 font-semibold text-lg">Shared links</div>
+          <div class="text-slate-500 text-sm mt-1">Temporary links you created. Expired or revoked links won’t work.</div>
+        </div>
+      </div>
+
+      <div class="mt-5 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500">
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Item</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Type</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Created</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Expires</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Status</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">URL</th>
+              <th class="px-4 py-3 border-b border-slate-200"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr class="hover:bg-slate-50" data-share-row="{{ r.id }}">
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">{{ r.item_name }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ r.item_type }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ r.created_at }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ r.expires_at }}</td>
+                <td class="px-4 py-3 border-b border-slate-200">
+                  {% if r.status == 'active' %}
+                    <span class="text-emerald-700 font-semibold">active</span>
+                  {% elif r.status == 'expired' %}
+                    <span class="text-slate-500 font-semibold">expired</span>
+                  {% else %}
+                    <span class="text-rose-700 font-semibold">revoked</span>
+                  {% endif %}
+                </td>
+                <td class="px-4 py-3 border-b border-slate-200">
+                  <div class="flex items-center gap-2">
+                    <input class="minimal-input" style="padding:.45rem .6rem" readonly value="{{ r.url }}" />
+                    <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" data-copy-url="{{ r.url }}">Copy</button>
+                  </div>
+                </td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right">
+                  {% if r.status == 'active' %}
+                    <form method="post" action="{{ url_for('revoke_share', share_id=r.id) }}" class="ajax-revoke" data-share-id="{{ r.id }}">
+                      <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">Revoke</button>
+                    </form>
+                  {% else %}
+                    <span class="text-slate-400">-</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% else %}
+              <tr>
+                <td class="px-4 py-6 text-slate-500" colspan="7">No shared links yet.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('click', async function(ev){
+      var copyBtn = ev.target.closest('button[data-copy-url]');
+      if(copyBtn){
+        ev.preventDefault();
+        var url = copyBtn.getAttribute('data-copy-url') || '';
+        try{
+          await navigator.clipboard.writeText(url);
+        }catch(e){
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+        }
+        copyBtn.textContent = 'Copied';
+        setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1200);
+        return;
+      }
+    });
+
+    document.addEventListener('submit', async function(ev){
+      var form = ev.target.closest('form.ajax-revoke');
+      if(!form) return;
+      ev.preventDefault();
+      var action = form.getAttribute('action');
+      var shareId = form.getAttribute('data-share-id');
+      var res = await fetch(action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+      var data = await res.json().catch(function(){ return null; });
+      if(!res.ok || !data || data.ok === false){
+        alert((data && data.error) ? data.error : 'Revoke failed');
+        return;
+      }
+      var row = document.querySelector('[data-share-row="'+shareId+'"]');
+      if(row){
+        row.querySelectorAll('form.ajax-revoke').forEach(function(f){ f.remove(); });
+        var statusCell = row.children[4];
+        if(statusCell) statusCell.innerHTML = '<span class="text-rose-700 font-semibold">revoked</span>';
+        var actionCell = row.children[6];
+        if(actionCell) actionCell.innerHTML = '<span class="text-slate-400">-</span>';
+      }
+    });
+  </script>
+{% endblock %}

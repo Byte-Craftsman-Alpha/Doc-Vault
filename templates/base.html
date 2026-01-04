@@ -25,8 +25,8 @@
     </style>
   </head>
   <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
-    <div class="grid grid-cols-1 md:grid-cols-[280px_1fr]">
-      <aside class="p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-white/60 backdrop-blur">
+    <div class="min-h-screen flex flex-col md:flex-row">
+      <aside class="p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-white/60 backdrop-blur md:w-[280px] shrink-0">
         <div class="flex items-center gap-3 mb-8">
           <div class="w-10 h-10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-gradient-to-br from-indigo-500 to-purple-600"></div>
           <div>
@@ -51,6 +51,10 @@
             <span class="iconify" data-icon="mdi:magnify"></span>
             <span>Search</span>
           </a>
+          <a class="minimal-nav-item {% if request.endpoint == 'shared_links' %}active{% endif %}" href="{{ url_for('shared_links') }}" data-sidebar-shared>
+            <span class="iconify" data-icon="mdi:link-variant"></span>
+            <span>Shared</span>
+          </a>
         </nav>
 
         <div class="mt-10 minimal-card p-4">
@@ -62,7 +66,7 @@
         </div>
       </aside>
 
-      <main class="p-6 md:p-8">
+      <main class="p-6 md:p-8 flex-1 flex flex-col">
         <div class="space-y-3 mb-6">
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -73,10 +77,83 @@
           {% endwith %}
         </div>
 
-        {% block content %}{% endblock %}
+        <div class="flex-1 min-h-0 flex flex-col">
+          {% block content %}{% endblock %}
+        </div>
       </main>
     </div>
 
-    <script></script>
+    <script>
+      (function(){
+        var MAP = {
+          'mdi:arrow-left': 'solar:arrow-left-bold-duotone',
+          'mdi:arrow-right': 'solar:arrow-right-bold-duotone',
+          'mdi:chevron-right': 'solar:alt-arrow-right-line-duotone',
+          'mdi:magnify': 'solar:magnifer-bold-duotone',
+          'mdi:tune-vertical': 'solar:settings-bold-duotone',
+          'mdi:plus': 'solar:add-circle-bold-duotone',
+          'mdi:upload': 'solar:upload-bold-duotone',
+          'mdi:download': 'solar:download-bold-duotone',
+          'mdi:dots-vertical': 'solar:menu-dots-bold-duotone',
+          'mdi:folder-outline': 'solar:folder-bold-duotone',
+          'mdi:folder-plus-outline': 'solar:folder-bold-duotone',
+          'mdi:file-outline': 'solar:file-bold-duotone',
+          'mdi:view-grid-outline': 'solar:widget-bold-duotone',
+          'mdi:view-list': 'solar:list-bold-duotone',
+          'mdi:format-list-bulleted': 'solar:list-bold-duotone',
+          'mdi:view-grid': 'solar:widget-bold-duotone',
+          'mdi:view-grid-plus-outline': 'solar:widget-add-bold-duotone',
+          'mdi:bookmark-outline': 'solar:bookmark-bold-duotone',
+          'mdi:bookmark-remove-outline': 'solar:bookmark-bold-duotone',
+          'mdi:trash-can-outline': 'solar:trash-bin-trash-bold-duotone',
+          'mdi:rename-box-outline': 'solar:pen-2-line-duotone',
+          'mdi:share-variant-outline': 'solar:screen-share-bold-duotone',
+          'mdi:close': 'solar:close-circle-bold-duotone',
+          'mdi:home-outline': 'solar:home-angle-bold-duotone',
+          'mdi:link-variant': 'solar:link-bold-duotone'
+        };
+
+        function mapIcon(name){
+          if(!name) return '';
+          if(name.startsWith('solar:')) return name;
+          if(MAP[name]) return MAP[name];
+          if(name.startsWith('mdi:')) return 'solar:question-circle-bold-duotone';
+          return name;
+        }
+
+        function remap(root){
+          var nodes = (root || document).querySelectorAll ? (root || document).querySelectorAll('[data-icon]') : [];
+          for(var i=0;i<nodes.length;i++){
+            var el = nodes[i];
+            var cur = el.getAttribute('data-icon') || '';
+            var mapped = mapIcon(cur);
+            if(mapped && mapped !== cur) el.setAttribute('data-icon', mapped);
+          }
+          if(window.Iconify && typeof window.Iconify.scan === 'function'){
+            try{ window.Iconify.scan(root || document); }catch(e){}
+          }
+        }
+
+        if(document.readyState === 'loading'){
+          document.addEventListener('DOMContentLoaded', function(){ remap(document); });
+        }else{
+          remap(document);
+        }
+
+        try{
+          var obs = new MutationObserver(function(muts){
+            for(var i=0;i<muts.length;i++){
+              var m = muts[i];
+              for(var j=0;j<m.addedNodes.length;j++){
+                var n = m.addedNodes[j];
+                if(!n || n.nodeType !== 1) continue;
+                remap(n);
+              }
+            }
+          });
+          obs.observe(document.documentElement, { childList: true, subtree: true });
+        }catch(e){}
+      })();
+    </script>
   </body>
 </html>

@@ -3,11 +3,12 @@
 {% block title %}Vault - Cloud Vault{% endblock %}
 
 {% block content %}
-  <div class="minimal-card p-3">
-    <div class="flex items-center gap-3 flex-wrap">
-      <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" onclick="window.history.back()" title="Back">
-        <span class="iconify" data-icon="mdi:arrow-left"></span>
-      </button>
+  <div class="flex-1 min-h-0 flex flex-col">
+    <div class="minimal-card p-3 shrink-0">
+      <div class="flex items-center gap-3 flex-wrap">
+        <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" onclick="window.history.back()" title="Back">
+          <span class="iconify" data-icon="mdi:arrow-left"></span>
+        </button>
 
       <div class="flex-1 min-w-[240px]">
         <div class="flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-white">
@@ -28,7 +29,10 @@
           <div class="flex items-center gap-2">
             <div class="flex-1 flex items-center gap-2 border border-slate-200 rounded-xl px-3 py-2 bg-white">
               <span class="iconify text-slate-400" data-icon="mdi:magnify"></span>
-              <input class="w-full text-sm focus:outline-none" name="q" placeholder="Search Vault" />
+              <div class="relative w-full">
+                <input class="w-full text-sm focus:outline-none" id="explorer-search-input" name="q" placeholder="Search Vault" autocomplete="off" />
+                <div id="explorer-live-results" class="hidden absolute left-0 right-0 top-full mt-2 minimal-card p-2 shadow-lg z-30 max-h-96 overflow-auto"></div>
+              </div>
               <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" onclick="toggleExplorerAdvancedSearch()" title="Advanced search">
                 <span class="iconify" data-icon="mdi:tune-vertical"></span>
               </button>
@@ -59,7 +63,7 @@
           <div class="minimal-card p-4">
             <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">New folder</div>
             <form class="flex gap-3 ajax-form" method="post" action="{{ url_for('create_folder') }}" data-ajax="json">
-              <input class="minimal-input" name="name" placeholder="Folder name" required />
+              <input class="minimal-input" id="new-folder-input" name="name" placeholder="Folder name" required />
               <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">
                 <span class="iconify" data-icon="mdi:folder-plus-outline"></span>
                 <span>Create</span>
@@ -79,7 +83,7 @@
                   {% endif %}
                 {% endfor %}
               </select>
-              <input class="minimal-input" type="file" name="file" required />
+              <input class="minimal-input" id="new-upload-file-input" type="file" name="file" required />
               <button class="minimal-btn w-full minimal-btn-primary" type="submit">
                 <span class="iconify" data-icon="mdi:upload"></span>
                 <span>Upload</span>
@@ -88,33 +92,61 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="mt-6 minimal-card overflow-hidden">
-    <div class="p-4 border-b border-slate-200 flex items-center justify-between">
-      <div class="font-semibold text-slate-900 flex items-center gap-3" id="current-folder-pin" data-current-folder-id="{{ selected_folder.id if selected_folder else '' }}">
-        {% if selected_folder %}
-          <span>{{ selected_folder.name }}</span>
-          {% if selected_folder.is_bookmarked %}
-            <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('unbookmark_folder', folder_id=selected_folder.id) }}">
-              <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Remove from Quick access">
-                <span class="iconify" data-icon="mdi:bookmark-remove-outline"></span>
-                <span>Unpin</span>
-              </button>
-            </form>
-          {% else %}
-            <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('bookmark_folder', folder_id=selected_folder.id) }}">
-              <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Add to Quick access">
-                <span class="iconify" data-icon="mdi:bookmark-outline"></span>
-                <span>Pin</span>
-              </button>
-            </form>
-          {% endif %}
-        {% else %}
-          Folders
-        {% endif %}
+      <div class="relative">
+        <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" onclick="toggleExplorerViewMenu()" title="View">
+          <span class="iconify" data-icon="mdi:view-grid-outline"></span>
+          <span>View</span>
+        </button>
+        <div id="explorer-view-menu" class="hidden absolute right-0 mt-2 w-56 z-10">
+          <div class="minimal-card p-2">
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-view-mode="details">
+              <span class="iconify text-slate-500" data-icon="mdi:view-list"></span>
+              <span class="text-sm font-semibold">Details</span>
+            </button>
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-view-mode="list">
+              <span class="iconify text-slate-500" data-icon="mdi:format-list-bulleted"></span>
+              <span class="text-sm font-semibold">List</span>
+            </button>
+            <div class="h-px bg-slate-200 my-1"></div>
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-view-mode="tiles_small">
+              <span class="iconify text-slate-500" data-icon="mdi:view-grid"></span>
+              <span class="text-sm font-semibold">Small tiles</span>
+            </button>
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-view-mode="tiles_large">
+              <span class="iconify text-slate-500" data-icon="mdi:view-grid-plus-outline"></span>
+              <span class="text-sm font-semibold">Large tiles</span>
+            </button>
+          </div>
+        </div>
       </div>
+      </div>
+    </div>
+
+    <div class="mt-6 minimal-card overflow-hidden flex-1 flex flex-col min-h-0">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between shrink-0">
+        <div class="font-semibold text-slate-900 flex items-center gap-3" id="current-folder-pin" data-current-folder-id="{{ selected_folder.id if selected_folder else '' }}">
+          {% if selected_folder %}
+            <span>{{ selected_folder.name }}</span>
+            {% if selected_folder.is_bookmarked %}
+              <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('unbookmark_folder', folder_id=selected_folder.id) }}">
+                <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Remove from Quick access">
+                  <span class="iconify" data-icon="mdi:bookmark-remove-outline"></span>
+                  <span>Unpin</span>
+                </button>
+              </form>
+            {% else %}
+              <form method="post" class="ajax-form" data-ajax="json" action="{{ url_for('bookmark_folder', folder_id=selected_folder.id) }}">
+                <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Add to Quick access">
+                  <span class="iconify" data-icon="mdi:bookmark-outline"></span>
+                  <span>Pin</span>
+                </button>
+              </form>
+            {% endif %}
+          {% else %}
+            <span>Folders</span>
+          {% endif %}
+        </div>
       <div class="text-xs text-slate-500">
         {% if selected_folder %}
           Files in this folder
@@ -124,17 +156,19 @@
       </div>
     </div>
 
+      <div class="flex-1 min-h-0 overflow-auto" id="explorer-content-area">
+
     {% if not selected_folder %}
-      <div class="divide-y divide-slate-200" id="folder-list">
+      <div id="explorer-folders-details" class="divide-y divide-slate-200">
         {% for folder in folders %}
-          <div class="px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50" data-folder-row="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-folder-bookmarked="{{ 1 if folder.is_bookmarked else 0 }}">
+          <div class="px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50" data-folder-row="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-folder-bookmarked="{{ 1 if folder.is_bookmarked else 0 }}" data-selectable="folder" data-open-url="{{ url_for('folder_view', folder_id=folder.id) }}">
             <a class="flex items-center gap-3 min-w-0 flex-1" href="{{ url_for('folder_view', folder_id=folder.id) }}">
               <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
                 <span class="iconify" data-icon="mdi:folder-outline"></span>
               </div>
               <div class="min-w-0">
-                <div class="font-semibold text-slate-900 truncate">{{ folder.name }}</div>
-                <div class="text-xs text-slate-500">Created {{ folder.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                <div class="font-semibold text-slate-900 truncate" data-folder-title>{{ folder.name }}</div>
+                <div class="text-xs text-slate-500" data-folder-subtitle>Created {{ folder.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
               </div>
             </a>
 
@@ -168,31 +202,65 @@
         {% endfor %}
       </div>
 
+      <div id="explorer-folders-tiles" class="hidden p-4">
+        <div id="folder-tiles" class="grid gap-3" data-tiles>
+          {% for folder in folders %}
+            <a class="minimal-card p-3 hover:bg-slate-50 transition-none" href="{{ url_for('folder_view', folder_id=folder.id) }}" data-folder-tile="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-selectable="folder" data-open-url="{{ url_for('folder_view', folder_id=folder.id) }}">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center" data-folder-tile-icon>
+                  <span class="iconify" data-icon="mdi:folder-outline"></span>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-slate-900 truncate" data-folder-tile-title>{{ folder.name }}</div>
+                  <div class="text-xs text-slate-500 truncate">Folder</div>
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+
       <div class="border-t border-slate-200"></div>
 
-      <div class="overflow-x-auto">
+      <div id="explorer-root-files-details" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="bg-slate-50 text-slate-500">
               <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Name</th>
-              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Type</th>
-              <th class="text-right font-semibold px-4 py-3 border-b border-slate-200">Size</th>
-              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Modified</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200" data-file-col="type">Type</th>
+              <th class="text-right font-semibold px-4 py-3 border-b border-slate-200" data-file-col="size">Size</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200" data-file-col="modified">Modified</th>
               <th class="px-4 py-3 border-b border-slate-200"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="root-files-table-body">
             {% for f in files %}
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">{{ f.original_filename }}</td>
-                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.content_type or '-' }}</td>
-                <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
-                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <tr class="hover:bg-slate-50" data-file-row="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900" data-file-name>{{ f.original_filename }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="type">{{ f.content_type or '-' }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600" data-file-col="size">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="modified">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-right">
-                  <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
-                    <span class="iconify" data-icon="mdi:download"></span>
-                    <span>Download</span>
-                  </a>
+                  <div class="flex items-center justify-end gap-2">
+                    <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
+                      <span class="iconify" data-icon="mdi:download"></span>
+                      <span>Download</span>
+                    </a>
+
+                    <div class="relative" data-action-menu>
+                      <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn>
+                        <span class="iconify" data-icon="mdi:dots-vertical"></span>
+                      </button>
+                      <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
+                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                        <div class="h-px bg-slate-200 my-1"></div>
+                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                      </div>
+                    </div>
+                  </div>
                 </td>
               </tr>
             {% else %}
@@ -203,30 +271,84 @@
           </tbody>
         </table>
       </div>
+
+      <div id="explorer-root-files-tiles" class="hidden p-4">
+        <div id="root-files-tiles" class="grid gap-3" data-tiles>
+          {% for f in files %}
+            <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>
+                    <span class="iconify" data-icon="mdi:file-outline"></span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-slate-900 truncate" data-file-name>{{ f.original_filename }}</div>
+                    <div class="text-xs text-slate-500 truncate">{{ (f.content_type or '-') }} • {{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
+                    <span class="iconify" data-icon="mdi:download"></span>
+                  </a>
+                  <div class="relative" data-action-menu>
+                    <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn>
+                      <span class="iconify" data-icon="mdi:dots-vertical"></span>
+                    </button>
+                    <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
+                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
+                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                      <div class="h-px bg-slate-200 my-1"></div>
+                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
+                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
+                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
     {% else %}
-      <div class="overflow-x-auto">
+      <div id="explorer-folder-files-details" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="bg-slate-50 text-slate-500">
               <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Name</th>
-              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Type</th>
-              <th class="text-right font-semibold px-4 py-3 border-b border-slate-200">Size</th>
-              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Modified</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200" data-file-col="type">Type</th>
+              <th class="text-right font-semibold px-4 py-3 border-b border-slate-200" data-file-col="size">Size</th>
+              <th class="text-left font-semibold px-4 py-3 border-b border-slate-200" data-file-col="modified">Modified</th>
               <th class="px-4 py-3 border-b border-slate-200"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="folder-files-table-body">
             {% for f in files %}
-              <tr class="hover:bg-slate-50">
-                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">{{ f.original_filename }}</td>
-                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.content_type or '-' }}</td>
-                <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
-                <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+              <tr class="hover:bg-slate-50" data-file-row="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900" data-file-name>{{ f.original_filename }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="type">{{ f.content_type or '-' }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600" data-file-col="size">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
+                <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="modified">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-right">
-                  <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
-                    <span class="iconify" data-icon="mdi:download"></span>
-                    <span>Download</span>
-                  </a>
+                  <div class="flex items-center justify-end gap-2">
+                    <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
+                      <span class="iconify" data-icon="mdi:download"></span>
+                      <span>Download</span>
+                    </a>
+
+                    <div class="relative" data-action-menu>
+                      <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn>
+                        <span class="iconify" data-icon="mdi:dots-vertical"></span>
+                      </button>
+                      <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
+                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                        <div class="h-px bg-slate-200 my-1"></div>
+                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
+                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                      </div>
+                    </div>
+                  </div>
                 </td>
               </tr>
             {% else %}
@@ -237,15 +359,120 @@
           </tbody>
         </table>
       </div>
-    {% endif %}
+
+      <div id="explorer-folder-files-tiles" class="hidden p-4">
+        <div id="folder-files-tiles" class="grid gap-3" data-tiles>
+          {% for f in files %}
+            <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
+              <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>
+                    <span class="iconify" data-icon="mdi:file-outline"></span>
+                  </div>
+                  <div class="min-w-0">
+                    <div class="font-semibold text-slate-900 truncate" data-file-name>{{ f.original_filename }}</div>
+                    <div class="text-xs text-slate-500 truncate">{{ (f.content_type or '-') }} • {{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="{{ url_for('download', file_id=f.id) }}">
+                    <span class="iconify" data-icon="mdi:download"></span>
+                  </a>
+                  <div class="relative" data-action-menu>
+                    <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn>
+                      <span class="iconify" data-icon="mdi:dots-vertical"></span>
+                    </button>
+                    <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
+                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
+                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                      <div class="h-px bg-slate-200 my-1"></div>
+                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
+                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
+                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      </div>
+    </div>
+
+  <div id="drop-overlay" class="hidden fixed inset-0 z-30 bg-slate-900/10"></div>
+  <div id="drop-confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6">
+    <div class="minimal-card w-full max-w-md p-5 shadow-lg">
+      <div class="flex items-center justify-between">
+        <div class="font-semibold text-slate-900" id="drop-destination">Upload</div>
+        <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" id="drop-cancel-x" title="Close">
+          <span class="iconify" data-icon="mdi:close"></span>
+        </button>
+      </div>
+      <div class="mt-4 text-sm text-slate-700">
+        <div class="font-semibold" id="drop-file-name">file</div>
+        <div class="text-slate-500 mt-1" id="drop-file-size">size</div>
+      </div>
+      <div class="mt-5 flex items-center justify-end gap-2">
+        <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" id="drop-cancel">Cancel</button>
+        <button class="minimal-btn minimal-btn-primary" type="button" id="drop-upload">Upload</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="action-menu-portal" class="hidden fixed z-50"></div>
+  <div id="action-menu-backdrop" class="hidden fixed inset-0 z-40 bg-slate-900/5"></div>
+
+  <div id="context-menu-backdrop" class="hidden fixed inset-0 z-40"></div>
+  <div id="explorer-context-menu" class="hidden fixed z-50 w-64">
+    <div class="minimal-card p-2 shadow-lg">
+      <div id="context-folder-actions" class="hidden">
+        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_open">
+          <span class="iconify text-slate-500" data-icon="mdi:folder-open-outline"></span>
+          <span class="text-sm font-semibold">Open</span>
+        </button>
+        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_share">
+          <span class="iconify text-slate-500" data-icon="mdi:share-variant-outline"></span>
+          <span class="text-sm font-semibold">Share</span>
+        </button>
+        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_rename">
+          <span class="iconify text-slate-500" data-icon="mdi:rename-box-outline"></span>
+          <span class="text-sm font-semibold">Rename</span>
+        </button>
+        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_delete">
+          <span class="iconify text-slate-500" data-icon="mdi:trash-can-outline"></span>
+          <span class="text-sm font-semibold">Delete</span>
+        </button>
+        <div class="h-px bg-slate-200 my-1"></div>
+        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_pin">
+          <span class="iconify text-slate-500" data-icon="mdi:bookmark-outline"></span>
+          <span class="text-sm font-semibold" id="context-folder-pin-label">Pin</span>
+        </button>
+        <div class="h-px bg-slate-200 my-1"></div>
+      </div>
+
+      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="new_folder">
+        <span class="iconify text-slate-500" data-icon="mdi:folder-plus-outline"></span>
+        <span class="text-sm font-semibold">New folder</span>
+      </button>
+      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="upload_file">
+        <span class="iconify text-slate-500" data-icon="mdi:upload"></span>
+        <span class="text-sm font-semibold">Upload file</span>
+      </button>
+      <div class="h-px bg-slate-200 my-1"></div>
+      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="view">
+        <span class="iconify text-slate-500" data-icon="mdi:view-grid-outline"></span>
+        <span class="text-sm font-semibold">View</span>
+      </button>
+      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+        <span class="iconify" data-icon="mdi:sort"></span>
+        <span class="text-sm font-semibold">Sort</span>
+      </button>
+    </div>
   </div>
 
   <script>
-    function toggleExplorerAdvancedSearch(){
-      var el = document.getElementById('explorer-advanced');
-      if(!el) return;
-      el.classList.toggle('hidden');
-    }
 
     function updateCurrentFolderPin(folderId, isBookmarked){
       var container = document.getElementById('current-folder-pin');
@@ -271,7 +498,564 @@
       if(!el) return;
       el.classList.toggle('hidden');
     }
-    document.addEventListener('click', function(ev){
+
+    function toggleExplorerViewMenu(){
+      var el = document.getElementById('explorer-view-menu');
+      if(!el) return;
+      el.classList.toggle('hidden');
+    }
+
+    function hideExplorerContextMenu(){
+      var m = document.getElementById('explorer-context-menu');
+      var b = document.getElementById('context-menu-backdrop');
+      if(m) m.classList.add('hidden');
+      if(b) b.classList.add('hidden');
+      if(m){
+        m.removeAttribute('data-context-folder-id');
+        m.removeAttribute('data-context-folder-open-url');
+        m.removeAttribute('data-context-folder-bookmarked');
+      }
+    }
+
+    function showExplorerContextMenu(x, y){
+      var m = document.getElementById('explorer-context-menu');
+      var b = document.getElementById('context-menu-backdrop');
+      if(!m || !b) return;
+
+      var folderSection = document.getElementById('context-folder-actions');
+      if(folderSection){
+        folderSection.classList.toggle('hidden', !m.getAttribute('data-context-folder-id'));
+        var pinLabel = document.getElementById('context-folder-pin-label');
+        if(pinLabel){
+          pinLabel.textContent = (m.getAttribute('data-context-folder-bookmarked') === '1') ? 'Unpin' : 'Pin';
+        }
+      }
+
+      b.classList.remove('hidden');
+      m.classList.remove('hidden');
+      m.style.left = '0px';
+      m.style.top = '0px';
+      var vw = window.innerWidth || document.documentElement.clientWidth;
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      var rect = m.getBoundingClientRect();
+      var left = Math.min(x, vw - rect.width - 8);
+      var top = Math.min(y, vh - rect.height - 8);
+      left = Math.max(8, left);
+      top = Math.max(8, top);
+      m.style.left = left + 'px';
+      m.style.top = top + 'px';
+    }
+
+    function isActionClick(target){
+      if(!target) return false;
+      if(target.closest('form')) return true;
+      if(target.closest('button')) return true;
+      if(target.closest('[data-action-menu]')) return true;
+      if(target.closest('a.minimal-btn')) return true;
+      if(target.closest('#explorer-live-results')) return true;
+      return false;
+    }
+
+    var __selectedEl = null;
+    var __selectedRowCells = null;
+    function clearSelection(){
+      if(__selectedEl){
+        __selectedEl.classList.remove('bg-indigo-50','ring-2','ring-indigo-500');
+        __selectedEl = null;
+      }
+
+      if(__selectedRowCells){
+        try{
+          __selectedRowCells.tds.forEach(function(td){
+            td.classList.remove('bg-indigo-50');
+          });
+          if(__selectedRowCells.first){
+            __selectedRowCells.first.classList.remove('border-l-4','border-indigo-500');
+          }
+        } catch(e) {}
+        __selectedRowCells = null;
+      }
+    }
+
+    function selectItem(el){
+      if(!el) return;
+      if(__selectedEl === el) return;
+      clearSelection();
+      __selectedEl = el;
+
+      if(el.tagName === 'TR'){
+        var tds = Array.prototype.slice.call(el.querySelectorAll('td'));
+        tds.forEach(function(td){ td.classList.add('bg-indigo-50'); });
+        var first = tds.length ? tds[0] : null;
+        if(first) first.classList.add('border-l-4','border-indigo-500');
+        __selectedRowCells = { tds: tds, first: first };
+      }else{
+        el.classList.add('bg-indigo-50','ring-2','ring-indigo-500');
+      }
+    }
+
+    function updateViewMenuActive(mode){
+      var menu = document.getElementById('explorer-view-menu');
+      if(!menu) return;
+      menu.querySelectorAll('button[data-view-mode]').forEach(function(btn){
+        btn.classList.remove('bg-slate-100');
+      });
+      var active = menu.querySelector('button[data-view-mode="'+mode+'"]');
+      if(active) active.classList.add('bg-slate-100');
+    }
+
+    function applyExplorerViewMode(mode){
+      var foldersDetails = document.getElementById('explorer-folders-details');
+      var foldersTiles = document.getElementById('explorer-folders-tiles');
+      var rootFilesDetails = document.getElementById('explorer-root-files-details');
+      var rootFilesTiles = document.getElementById('explorer-root-files-tiles');
+      var folderFilesDetails = document.getElementById('explorer-folder-files-details');
+      var folderFilesTiles = document.getElementById('explorer-folder-files-tiles');
+
+      var allowed = { details: 1, list: 1, tiles_small: 1, tiles_large: 1 };
+      if(!allowed[mode]) mode = 'details';
+
+      var showTiles = (mode === 'tiles_small' || mode === 'tiles_large');
+      var isList = (mode === 'list');
+
+      if(foldersDetails && foldersTiles){
+        foldersDetails.classList.toggle('hidden', showTiles);
+        foldersTiles.classList.toggle('hidden', !showTiles);
+      }
+
+      if(rootFilesDetails && rootFilesTiles){
+        rootFilesDetails.classList.toggle('hidden', showTiles);
+        rootFilesTiles.classList.toggle('hidden', !showTiles);
+      }
+
+      if(folderFilesDetails && folderFilesTiles){
+        folderFilesDetails.classList.toggle('hidden', showTiles);
+        folderFilesTiles.classList.toggle('hidden', !showTiles);
+      }
+
+      document.querySelectorAll('[data-tiles]').forEach(function(grid){
+        if(mode === 'tiles_large'){
+          grid.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
+        }else{
+          grid.className = 'grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+        }
+      });
+
+      document.querySelectorAll('[data-tile-icon]').forEach(function(icon){
+        icon.classList.remove('w-8','h-8','w-10','h-10','w-12','h-12');
+        if(mode === 'tiles_large'){
+          icon.classList.add('w-12','h-12');
+        }else if(mode === 'tiles_small'){
+          icon.classList.add('w-8','h-8');
+        }else{
+          icon.classList.add('w-10','h-10');
+        }
+      });
+
+      document.querySelectorAll('[data-file-col]').forEach(function(el){
+        el.classList.toggle('hidden', isList && !showTiles);
+      });
+      document.querySelectorAll('[data-folder-subtitle]').forEach(function(el){
+        el.classList.toggle('hidden', isList && !showTiles);
+      });
+
+      var scroll = document.querySelector('.flex-1.min-h-0.overflow-auto');
+      if(scroll){
+        scroll.classList.toggle('text-sm', isList);
+      }
+
+      updateViewMenuActive(mode);
+    }
+
+    document.addEventListener('dblclick', function(ev){
+      if(isActionClick(ev.target)) return;
+      var selectable = ev.target.closest('[data-selectable][data-open-url]');
+      if(!selectable) return;
+      if(selectable.tagName === 'A') ev.preventDefault();
+      var url = selectable.getAttribute('data-open-url');
+      if(url) window.location.href = url;
+    });
+
+    (function(){
+      var area = document.getElementById('explorer-content-area');
+      if(!area) return;
+      area.addEventListener('contextmenu', function(ev){
+        var onSelectable = ev.target.closest('[data-selectable]');
+        var onAction = isActionClick(ev.target);
+        if(onAction) return;
+        ev.preventDefault();
+        closeAllActionMenus();
+        var menu = document.getElementById('explorer-context-menu');
+        if(menu){
+          if(onSelectable && onSelectable.getAttribute('data-selectable') === 'folder'){
+            var folderEl = ev.target.closest('[data-folder-row],[data-folder-tile]') || onSelectable;
+            var folderId = (folderEl.getAttribute('data-folder-row') || folderEl.getAttribute('data-folder-tile') || '').trim();
+            menu.setAttribute('data-context-folder-id', folderId);
+            menu.setAttribute('data-context-folder-open-url', folderEl.getAttribute('data-open-url') || '');
+            menu.setAttribute('data-context-folder-bookmarked', folderEl.getAttribute('data-folder-bookmarked') || '0');
+          }else{
+            menu.removeAttribute('data-context-folder-id');
+            menu.removeAttribute('data-context-folder-open-url');
+            menu.removeAttribute('data-context-folder-bookmarked');
+          }
+        }
+        showExplorerContextMenu(ev.clientX, ev.clientY);
+      });
+
+      var backdrop = document.getElementById('context-menu-backdrop');
+      if(backdrop){
+        backdrop.addEventListener('click', function(){
+          hideExplorerContextMenu();
+        });
+      }
+
+      document.addEventListener('keydown', function(ev){
+        if(ev.key === 'Escape') hideExplorerContextMenu();
+      });
+      window.addEventListener('scroll', function(){ hideExplorerContextMenu(); }, true);
+    })();
+
+    function closeAllActionMenus(){
+      document.querySelectorAll('[data-action-menu-pop]').forEach(function(p){
+        p.classList.add('hidden');
+      });
+
+      var portal = document.getElementById('action-menu-portal');
+      if(portal){
+        portal.classList.add('hidden');
+        portal.innerHTML = '';
+        portal.style.left = '';
+        portal.style.top = '';
+        portal.style.maxHeight = '';
+        portal.style.visibility = '';
+        portal.style.opacity = '';
+      }
+      var backdrop = document.getElementById('action-menu-backdrop');
+      if(backdrop) backdrop.classList.add('hidden');
+    }
+
+    function formatBytes(bytes){
+      var n = Number(bytes || 0);
+      if(!n) return '0 B';
+      var units = ['B','KB','MB','GB','TB'];
+      var i = Math.floor(Math.log(n)/Math.log(1024));
+      i = Math.min(i, units.length - 1);
+      var val = n / Math.pow(1024, i);
+      return (i === 0 ? String(n) : val.toFixed(1)) + ' ' + units[i];
+    }
+
+    function showDropConfirm(file){
+      var modal = document.getElementById('drop-confirm');
+      var overlay = document.getElementById('drop-overlay');
+      if(!modal || !overlay) return;
+      var destEl = document.getElementById('drop-destination');
+      var nameEl = document.getElementById('drop-file-name');
+      var sizeEl = document.getElementById('drop-file-size');
+      if(destEl) destEl.textContent = window.__dropDestinationLabel || 'Upload';
+      if(nameEl) nameEl.textContent = file ? file.name : '';
+      if(sizeEl) sizeEl.textContent = file ? formatBytes(file.size) : '';
+      overlay.classList.remove('hidden');
+      modal.classList.remove('hidden');
+    }
+
+    function hideDropConfirm(){
+      var modal = document.getElementById('drop-confirm');
+      var overlay = document.getElementById('drop-overlay');
+      if(overlay) overlay.classList.add('hidden');
+      if(modal) modal.classList.add('hidden');
+    }
+
+    function addFileRowTo(tbodyId, file){
+      var tbody = document.getElementById(tbodyId);
+      if(!tbody) return;
+      var tr = document.createElement('tr');
+      tr.className = 'hover:bg-slate-50';
+      tr.setAttribute('data-file-row', file.id);
+      var sizeText = (file.size_bytes ? (file.size_bytes / 1024).toFixed(1) + ' KB' : '-');
+      tr.innerHTML = ''+
+        '<td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900" data-file-name></td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 text-slate-600">'+(file.content_type || '-')+'</td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">'+sizeText+'</td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 text-slate-600">'+(file.uploaded_at || '')+'</td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 text-right">'+
+          '<div class="flex items-center justify-end gap-2">'+
+            '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/file/'+file.id+'/download">'+
+              '<span class="iconify" data-icon="mdi:download"></span><span>Download</span>'+
+            '</a>'+
+            '<div class="relative" data-action-menu>'+
+              '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn><span class="iconify" data-icon="mdi:dots-vertical"></span></button>'+
+              '<div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'">Rename</button>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'">Delete</button>'+
+                '<div class="h-px bg-slate-200 my-1"></div>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'">Share</button>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>'+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+        '</td>';
+      tr.querySelector('[data-file-name]').textContent = file.original_filename;
+      tbody.prepend(tr);
+    }
+
+    function addFileTileTo(containerId, file){
+      var container = document.getElementById(containerId);
+      if(!container) return;
+      var div = document.createElement('div');
+      div.className = 'minimal-card p-3';
+      div.setAttribute('data-file-tile', file.id);
+      div.setAttribute('data-selectable','file');
+      div.setAttribute('data-open-url','/file/' + file.id + '/download');
+      div.innerHTML = ''+
+        '<div class="flex items-center justify-between gap-3">'+
+          '<div class="flex items-center gap-3 min-w-0">'+
+            '<div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon><span class="iconify" data-icon="mdi:file-outline"></span></div>'+
+            '<div class="min-w-0">'+
+              '<div class="font-semibold text-slate-900 truncate" data-file-name></div>'+
+              '<div class="text-xs text-slate-500 truncate"></div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="flex items-center gap-2 shrink-0">'+
+            '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/file/'+file.id+'/download"><span class="iconify" data-icon="mdi:download"></span></a>'+
+            '<div class="relative" data-action-menu>'+
+              '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn><span class="iconify" data-icon="mdi:dots-vertical"></span></button>'+
+              '<div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'">Rename</button>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'">Delete</button>'+
+                '<div class="h-px bg-slate-200 my-1"></div>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'">Share</button>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>'+
+                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>'+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+        '</div>';
+      div.querySelector('[data-file-name]').textContent = file.original_filename;
+      var meta = div.querySelector('.text-xs');
+      if(meta) meta.textContent = (file.content_type || '-') + (file.uploaded_at ? (' • ' + file.uploaded_at) : '');
+      container.prepend(div);
+
+      var mode = localStorage.getItem('vault_view_mode') || 'details';
+      applyExplorerViewMode(mode);
+    }
+
+    (function(){
+      var rootFolderId = '{{ root_folder_id or "" }}';
+      var selectedFolderId = '{{ selected_folder_id or "" }}';
+      var selectedFolderName = '{{ selected_folder.name if selected_folder else "" }}';
+      var dropFile = null;
+      var overlay = document.getElementById('drop-overlay');
+
+      function getDropTarget(){
+        if(selectedFolderId){
+          window.__dropDestinationLabel = 'Upload to ' + (selectedFolderName ? selectedFolderName : 'this folder');
+          return { folderId: selectedFolderId, tbodyId: 'folder-files-table-body', tilesId: 'folder-files-tiles' };
+        }
+        window.__dropDestinationLabel = 'Upload to Vault (root)';
+        return { folderId: rootFolderId, tbodyId: 'root-files-table-body', tilesId: 'root-files-tiles' };
+      }
+
+      function showOverlay(){
+        if(overlay) overlay.classList.remove('hidden');
+      }
+
+      function hideOverlay(){
+        var modal = document.getElementById('drop-confirm');
+        if(modal && !modal.classList.contains('hidden')) return;
+        if(overlay) overlay.classList.add('hidden');
+      }
+
+      document.addEventListener('dragenter', function(ev){
+        if(!ev.dataTransfer) return;
+        if(!ev.dataTransfer.types || Array.prototype.indexOf.call(ev.dataTransfer.types,'Files') === -1) return;
+        ev.preventDefault();
+        showOverlay();
+      });
+
+      document.addEventListener('dragover', function(ev){
+        if(!ev.dataTransfer) return;
+        if(!ev.dataTransfer.types || Array.prototype.indexOf.call(ev.dataTransfer.types,'Files') === -1) return;
+        ev.preventDefault();
+      });
+
+      document.addEventListener('dragleave', function(ev){
+        if(!ev.dataTransfer) return;
+        if(ev.target === document.documentElement){
+          hideOverlay();
+        }
+      });
+
+      document.addEventListener('drop', function(ev){
+        if(!ev.dataTransfer) return;
+        if(!ev.dataTransfer.files || !ev.dataTransfer.files.length) return;
+        ev.preventDefault();
+        hideOverlay();
+        var target = getDropTarget();
+        if(!target.folderId){
+          alert('Upload folder not available.');
+          return;
+        }
+        dropFile = ev.dataTransfer.files[0];
+        showDropConfirm(dropFile);
+      });
+
+      var cancel = document.getElementById('drop-cancel');
+      var cancelX = document.getElementById('drop-cancel-x');
+      if(cancel) cancel.addEventListener('click', function(){ dropFile = null; hideDropConfirm(); });
+      if(cancelX) cancelX.addEventListener('click', function(){ dropFile = null; hideDropConfirm(); });
+      if(overlay) overlay.addEventListener('click', function(){ dropFile = null; hideDropConfirm(); closeAllActionMenus(); });
+
+      var uploadBtn = document.getElementById('drop-upload');
+      if(uploadBtn) uploadBtn.addEventListener('click', async function(){
+        if(!dropFile) return;
+        var target = getDropTarget();
+        if(!target.folderId){
+          alert('Upload folder not available.');
+          return;
+        }
+        uploadBtn.disabled = true;
+        try{
+          var fd = new FormData();
+          fd.append('folder_id', target.folderId);
+          fd.append('file', dropFile);
+          var res = await fetch('/upload', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd });
+          var data = await res.json().catch(function(){ return null; });
+          if(!res.ok || !data || data.ok === false){
+            alert((data && data.error) ? data.error : 'Upload failed');
+            return;
+          }
+          if(data.file){
+            addFileRowTo(target.tbodyId, data.file);
+            addFileTileTo(target.tilesId, data.file);
+          }
+          hideDropConfirm();
+          dropFile = null;
+        } finally {
+          uploadBtn.disabled = false;
+        }
+      });
+    })();
+
+    document.addEventListener('click', async function(ev){
+      if(!isActionClick(ev.target)){
+        var selectable = ev.target.closest('[data-selectable][data-open-url]');
+        if(selectable){
+          if(selectable.tagName === 'A') ev.preventDefault();
+          selectItem(selectable);
+          return;
+        }
+        if(!ev.target.closest('[data-selectable]')){
+          clearSelection();
+        }
+      }
+
+      var ctxAction = ev.target.closest('button[data-context-action]');
+      if(ctxAction){
+        ev.preventDefault();
+        var a = ctxAction.getAttribute('data-context-action');
+        var cm = document.getElementById('explorer-context-menu');
+        hideExplorerContextMenu();
+
+        if(a === 'folder_open'){
+          var openUrl = cm ? cm.getAttribute('data-context-folder-open-url') : '';
+          if(openUrl) window.location.href = openUrl;
+          return;
+        }
+        if(a === 'folder_share'){
+          var fidShare = cm ? cm.getAttribute('data-context-folder-id') : '';
+          if(!fidShare) return;
+          var share = await createShareLink('folder', fidShare);
+          if(!share) return;
+          await copyText(share.url);
+          alert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
+          return;
+        }
+        if(a === 'folder_rename'){
+          var fid = cm ? cm.getAttribute('data-context-folder-id') : '';
+          var row = fid ? document.querySelector('[data-folder-row="'+fid+'"]') : null;
+          var currentName = row ? (row.getAttribute('data-folder-name') || '') : '';
+          var name = prompt('Rename folder', currentName || '');
+          if(name === null) return;
+          name = String(name).trim();
+          if(!name) return;
+          postAction('/folder/' + fid + '/rename', { name: name }).then(function(data){
+            if(!data || !data.folder) return;
+            updateRowFolderName(data.folder.id, data.folder.name);
+            var tile = document.querySelector('[data-folder-tile="'+data.folder.id+'"]');
+            if(tile){
+              tile.setAttribute('data-folder-name', data.folder.name);
+              var t = tile.querySelector('[data-folder-tile-title]');
+              if(t) t.textContent = data.folder.name;
+            }
+            sidebarRename(data.folder.id, data.folder.name);
+          });
+          return;
+        }
+        if(a === 'folder_delete'){
+          var fid2 = cm ? cm.getAttribute('data-context-folder-id') : '';
+          if(!fid2) return;
+          if(!confirm('Delete this folder and all its files?')) return;
+          postAction('/folder/' + fid2 + '/delete', {}).then(function(){
+            removeFolderRow(fid2);
+            var tileDel = document.querySelector('[data-folder-tile="'+fid2+'"]');
+            if(tileDel) tileDel.remove();
+            sidebarRemove(fid2);
+          });
+          return;
+        }
+        if(a === 'folder_pin'){
+          var fid3 = cm ? cm.getAttribute('data-context-folder-id') : '';
+          if(!fid3) return;
+          var bookmarked = cm ? (cm.getAttribute('data-context-folder-bookmarked') === '1') : false;
+          var url = '/folder/' + fid3 + (bookmarked ? '/unbookmark' : '/bookmark');
+          postAction(url, {}).then(function(data){
+            if(!data) return;
+            var folderId = data.folder_id;
+            var name = data.name;
+            if(data.is_bookmarked){
+              sidebarUpsert(folderId, name);
+            }else{
+              sidebarRemove(folderId);
+            }
+            updateRowBookmarkState(folderId, data.is_bookmarked);
+            updateCurrentFolderPin(folderId, data.is_bookmarked);
+          });
+          return;
+        }
+
+        if(a === 'new_folder'){
+          var menu = document.getElementById('explorer-new-menu');
+          if(menu && menu.classList.contains('hidden')) toggleExplorerNewMenu();
+          var input = document.getElementById('new-folder-input');
+          if(input) input.focus();
+          return;
+        }
+        if(a === 'upload_file'){
+          var menu2 = document.getElementById('explorer-new-menu');
+          if(menu2 && menu2.classList.contains('hidden')) toggleExplorerNewMenu();
+          var fileInput = document.getElementById('new-upload-file-input');
+          if(fileInput) fileInput.click();
+          return;
+        }
+        if(a === 'view'){
+          var vm = document.getElementById('explorer-view-menu');
+          if(vm && vm.classList.contains('hidden')) toggleExplorerViewMenu();
+          return;
+        }
+      }
+
+      var viewModeBtn = ev.target.closest('button[data-view-mode]');
+      if(viewModeBtn){
+        ev.preventDefault();
+        var mode = viewModeBtn.getAttribute('data-view-mode') || 'details';
+        localStorage.setItem('vault_view_mode', mode);
+        applyExplorerViewMode(mode);
+        var vm = document.getElementById('explorer-view-menu');
+        if(vm) vm.classList.add('hidden');
+        return;
+      }
+
       var menu = document.getElementById('explorer-new-menu');
       if(menu && !menu.classList.contains('hidden')){
         var inside = ev.target.closest('#explorer-new-menu');
@@ -279,6 +1063,245 @@
         if(inside) return;
         if(btn && btn.getAttribute('onclick') && btn.getAttribute('onclick').includes('toggleExplorerNewMenu')) return;
         menu.classList.add('hidden');
+      }
+
+      var viewMenu = document.getElementById('explorer-view-menu');
+      if(viewMenu && !viewMenu.classList.contains('hidden')){
+        var insideView = ev.target.closest('#explorer-view-menu');
+        var btnView = ev.target.closest('button');
+        if(insideView) return;
+        if(btnView && btnView.getAttribute('onclick') && btnView.getAttribute('onclick').includes('toggleExplorerViewMenu')) return;
+        viewMenu.classList.add('hidden');
+      }
+
+      var actionBtn = ev.target.closest('[data-action-menu-btn]');
+      if(actionBtn){
+        ev.preventDefault();
+        hideExplorerContextMenu();
+        var container = actionBtn.closest('[data-action-menu]');
+        var pop = container ? container.querySelector('[data-action-menu-pop]') : null;
+        if(!pop) return;
+
+        var portal = document.getElementById('action-menu-portal');
+        var backdrop = document.getElementById('action-menu-backdrop');
+        if(!portal || !backdrop) return;
+
+        var alreadyOpen = !portal.classList.contains('hidden');
+        closeAllActionMenus();
+        if(alreadyOpen) return;
+
+        portal.innerHTML = '<div class="minimal-card p-2 shadow-lg w-44">' + pop.innerHTML + '</div>';
+        portal.style.transition = 'none';
+        portal.style.left = '-9999px';
+        portal.style.top = '-9999px';
+        portal.style.visibility = 'hidden';
+        portal.style.opacity = '0';
+        portal.classList.remove('hidden');
+        backdrop.classList.remove('hidden');
+
+        portal.style.maxHeight = (window.innerHeight - 16) + 'px';
+
+        var rect = actionBtn.getBoundingClientRect();
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+        var pad = 8;
+
+        var content = portal.firstElementChild;
+        var pr = (content ? content.getBoundingClientRect() : portal.getBoundingClientRect());
+
+        var left = rect.right - pr.width;
+        if(left < pad) left = pad;
+        if(left + pr.width > vw - pad) left = Math.max(pad, vw - pad - pr.width);
+
+        var top = rect.bottom + pad;
+        if(top + pr.height > vh - pad){
+          top = rect.top - pad - pr.height;
+        }
+        if(top < pad) top = pad;
+        if(top + pr.height > vh - pad) top = Math.max(pad, vh - pad - pr.height);
+
+        portal.style.left = left + 'px';
+        portal.style.top = top + 'px';
+        portal.style.visibility = 'visible';
+        portal.style.opacity = '1';
+        return;
+      }
+
+      if(!ev.target.closest('[data-action-menu-pop]') && !ev.target.closest('#action-menu-portal')){
+        closeAllActionMenus();
+      }
+    });
+
+    function sidebarRename(folderId, name){
+      var nav = document.getElementById('quick-access-folders');
+      if(!nav) return;
+      var existing = nav.querySelector('[data-sidebar-folder="'+folderId+'"]');
+      if(!existing) return;
+      var label = existing.querySelector('span.truncate');
+      if(label) label.textContent = name;
+    }
+
+    function updateRowFolderName(folderId, name){
+      var row = document.querySelector('[data-folder-row="'+folderId+'"]');
+      if(!row) return;
+      row.setAttribute('data-folder-name', name);
+      var label = row.querySelector('.truncate');
+      if(label) label.textContent = name;
+    }
+
+    function removeFolderRow(folderId){
+      var row = document.querySelector('[data-folder-row="'+folderId+'"]');
+      if(row) row.remove();
+    }
+
+    function updateFileRowName(fileId, name){
+      var row = document.querySelector('[data-file-row="'+fileId+'"]');
+      if(!row) return;
+      var label = row.querySelector('[data-file-name]');
+      if(label) label.textContent = name;
+    }
+
+    function removeFileRow(fileId){
+      var row = document.querySelector('[data-file-row="'+fileId+'"]');
+      if(row) row.remove();
+    }
+
+    async function postAction(url, params){
+      var options = {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: new URLSearchParams(params || {}).toString()
+      };
+      var res = await fetch(url, options);
+      var data = await res.json().catch(function(){ return null; });
+      if(!res.ok || !data || data.ok === false){
+        alert((data && data.error) ? data.error : 'Request failed');
+        return null;
+      }
+      return data;
+    }
+
+    async function createShareLink(itemType, itemId){
+      var minutes = prompt('Share duration (minutes)', '30');
+      if(minutes === null) return null;
+      minutes = String(minutes).trim();
+      if(!minutes) minutes = '30';
+      var data = await postAction('/share', { item_type: itemType, item_id: itemId, minutes: minutes });
+      if(!data || !data.share || !data.share.url) return null;
+      return data.share;
+    }
+
+    async function copyText(text){
+      try{
+        await navigator.clipboard.writeText(text);
+        return true;
+      }catch(e){
+        try{
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          return true;
+        }catch(e2){
+          return false;
+        }
+      }
+    }
+
+    document.addEventListener('click', async function(ev){
+      var btn = ev.target.closest('button[data-action]');
+      if(!btn) return;
+      var action = btn.getAttribute('data-action');
+      if(!action) return;
+
+      if(action === 'folder-rename'){
+        ev.preventDefault();
+        closeAllActionMenus();
+        var folderId = btn.getAttribute('data-folder-id');
+        var row = document.querySelector('[data-folder-row="'+folderId+'"]');
+        var currentName = row ? row.getAttribute('data-folder-name') : '';
+        var name = prompt('Rename folder', currentName || '');
+        if(name === null) return;
+        name = String(name).trim();
+        if(!name) return;
+        var data = await postAction('/folder/' + folderId + '/rename', { name: name });
+        if(!data || !data.folder) return;
+        updateRowFolderName(data.folder.id, data.folder.name);
+        var tile = document.querySelector('[data-folder-tile="'+data.folder.id+'"]');
+        if(tile){
+          tile.setAttribute('data-folder-name', data.folder.name);
+          var t = tile.querySelector('[data-folder-tile-title]');
+          if(t) t.textContent = data.folder.name;
+        }
+        sidebarRename(data.folder.id, data.folder.name);
+        return;
+      }
+
+      if(action === 'folder-delete'){
+        ev.preventDefault();
+        closeAllActionMenus();
+        var folderIdDel = btn.getAttribute('data-folder-id');
+        if(!confirm('Delete this folder and all its files?')) return;
+        var dataDel = await postAction('/folder/' + folderIdDel + '/delete', {});
+        if(!dataDel) return;
+        removeFolderRow(folderIdDel);
+        var tileDel = document.querySelector('[data-folder-tile="'+folderIdDel+'"]');
+        if(tileDel) tileDel.remove();
+        sidebarRemove(folderIdDel);
+        return;
+      }
+
+      if(action === 'file-rename'){
+        ev.preventDefault();
+        closeAllActionMenus();
+        var fileId = btn.getAttribute('data-file-id');
+        var rowFile = document.querySelector('[data-file-row="'+fileId+'"]');
+        var label = rowFile ? rowFile.querySelector('[data-file-name]') : null;
+        var currentFileName = label ? label.textContent : '';
+        var newFileName = prompt('Rename file', currentFileName || '');
+        if(newFileName === null) return;
+        newFileName = String(newFileName).trim();
+        if(!newFileName) return;
+        var dataFile = await postAction('/file/' + fileId + '/rename', { name: newFileName });
+        if(!dataFile || !dataFile.file) return;
+        updateFileRowName(dataFile.file.id, dataFile.file.original_filename);
+        var fileTile = document.querySelector('[data-file-tile="'+dataFile.file.id+'"]');
+        if(fileTile){
+          var nameEl = fileTile.querySelector('[data-file-name]');
+          if(nameEl) nameEl.textContent = dataFile.file.original_filename;
+        }
+        return;
+      }
+
+      if(action === 'file-delete'){
+        ev.preventDefault();
+        closeAllActionMenus();
+        var fileIdDel = btn.getAttribute('data-file-id');
+        if(!confirm('Delete this file?')) return;
+        var dataFileDel = await postAction('/file/' + fileIdDel + '/delete', {});
+        if(!dataFileDel) return;
+        removeFileRow(fileIdDel);
+        var fileTileDel = document.querySelector('[data-file-tile="'+fileIdDel+'"]');
+        if(fileTileDel) fileTileDel.remove();
+        return;
+      }
+
+      if(action === 'file-share'){
+        ev.preventDefault();
+        closeAllActionMenus();
+        var fileIdShare = btn.getAttribute('data-file-id');
+        if(!fileIdShare) return;
+        var share = await createShareLink('file', fileIdShare);
+        if(!share) return;
+        await copyText(share.url);
+        alert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
+        return;
       }
     });
 
@@ -358,13 +1381,15 @@
       if(url.endsWith('/folders')){
         var folder = data.folder;
         if(folder && folder.id){
-          var list = document.getElementById('folder-list');
+          var list = document.getElementById('explorer-folders-details');
           if(list){
             var div = document.createElement('div');
             div.className = 'px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50';
             div.setAttribute('data-folder-row', folder.id);
             div.setAttribute('data-folder-name', folder.name);
             div.setAttribute('data-folder-bookmarked', folder.is_bookmarked ? '1' : '0');
+            div.setAttribute('data-selectable', 'folder');
+            div.setAttribute('data-open-url', '/folder/' + folder.id);
             div.innerHTML = '<a class="flex items-center gap-3 min-w-0 flex-1" href="/folder/'+folder.id+'">'+
               '<div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center"><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
               '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate"></div><div class="text-xs text-slate-500"></div></div></a>'+
@@ -377,6 +1402,23 @@
             div.querySelector('.truncate').textContent = folder.name;
             div.querySelector('.text-xs').textContent = 'Created ' + folder.created_at;
             list.prepend(div);
+          }
+
+          var tiles = document.getElementById('folder-tiles');
+          if(tiles){
+            var tile = document.createElement('a');
+            tile.className = 'minimal-card p-3 hover:bg-slate-50 transition-none';
+            tile.href = '/folder/' + folder.id;
+            tile.setAttribute('data-folder-tile', folder.id);
+            tile.setAttribute('data-folder-name', folder.name);
+            tile.setAttribute('data-selectable', 'folder');
+            tile.setAttribute('data-open-url', '/folder/' + folder.id);
+            tile.innerHTML = '<div class="flex items-center gap-3">'+
+              '<div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center" data-folder-tile-icon><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
+              '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate" data-folder-tile-title></div><div class="text-xs text-slate-500 truncate">Folder</div></div>'+
+              '</div>';
+            tile.querySelector('[data-folder-tile-title]').textContent = folder.name;
+            tiles.prepend(tile);
           }
 
           var select = document.querySelector('#explorer-new-menu select[name="folder_id"]');
@@ -405,5 +1447,139 @@
       ev.preventDefault();
       submitAjaxForm(form);
     });
+
+    (function(){
+      var input = document.getElementById('explorer-search-input');
+      var panel = document.getElementById('explorer-live-results');
+      if(!input || !panel) return;
+
+      var timer = null;
+      var activeIndex = -1;
+
+      function hide(){
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
+        activeIndex = -1;
+      }
+
+      function show(){
+        if(panel.innerHTML.trim()) panel.classList.remove('hidden');
+      }
+
+      function setActive(idx){
+        var items = panel.querySelectorAll('[data-live-item]');
+        items.forEach(function(el){ el.classList.remove('bg-slate-100'); });
+        if(idx >= 0 && idx < items.length){
+          items[idx].classList.add('bg-slate-100');
+          activeIndex = idx;
+        }else{
+          activeIndex = -1;
+        }
+      }
+
+      function render(results, q){
+        panel.innerHTML = '';
+        if(!q){
+          hide();
+          return;
+        }
+
+        if(!results || !results.length){
+          panel.innerHTML = '<div class="px-3 py-2 text-sm text-slate-500">No results</div>';
+          show();
+          return;
+        }
+
+        results.forEach(function(r, idx){
+          var a = document.createElement('a');
+          a.href = r.download_url || '#';
+          a.setAttribute('data-live-item','1');
+          a.setAttribute('data-open-folder', r.open_folder_url || '');
+          a.className = 'block px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-900';
+          a.innerHTML = ''+
+            '<div class="flex items-center justify-between gap-3">'+
+              '<div class="min-w-0">'+
+                '<div class="text-sm font-semibold truncate"></div>'+
+                '<div class="text-xs text-slate-500 truncate"></div>'+
+              '</div>'+
+              '<div class="text-xs text-slate-500 shrink-0">'+(r.uploaded_at || '')+'</div>'+
+            '</div>';
+          a.querySelector('.font-semibold').textContent = r.name || '';
+          a.querySelector('.text-xs').textContent = (r.folder && r.folder.name ? r.folder.name : '') + (r.content_type ? (' • ' + r.content_type) : '');
+          panel.appendChild(a);
+        });
+        show();
+        setActive(-1);
+      }
+
+      async function fetchResults(){
+        var q = (input.value || '').trim();
+        if(!q){
+          hide();
+          return;
+        }
+        var url = '/search?format=json&q=' + encodeURIComponent(q);
+        var res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+        var data = await res.json().catch(function(){ return null; });
+        if(!res.ok || !data || data.ok === false){
+          hide();
+          return;
+        }
+        render(data.results || [], q);
+      }
+
+      input.addEventListener('input', function(){
+        if(timer) clearTimeout(timer);
+        timer = setTimeout(fetchResults, 180);
+      });
+
+      input.addEventListener('focus', function(){
+        if(panel.innerHTML.trim()) panel.classList.remove('hidden');
+      });
+
+      document.addEventListener('click', function(ev){
+        if(ev.target.closest('#explorer-live-results') || ev.target.closest('#explorer-search-input')) return;
+        hide();
+      });
+
+      input.addEventListener('keydown', function(ev){
+        if(panel.classList.contains('hidden')) return;
+        var items = panel.querySelectorAll('[data-live-item]');
+        if(!items.length) return;
+
+        if(ev.key === 'ArrowDown'){
+          ev.preventDefault();
+          setActive(Math.min(activeIndex + 1, items.length - 1));
+          return;
+        }
+        if(ev.key === 'ArrowUp'){
+          ev.preventDefault();
+          setActive(Math.max(activeIndex - 1, 0));
+          return;
+        }
+        if(ev.key === 'Escape'){
+          hide();
+          return;
+        }
+        if(ev.key === 'Enter'){
+          if(activeIndex >= 0 && activeIndex < items.length){
+            ev.preventDefault();
+            window.location.href = items[activeIndex].getAttribute('href');
+          }
+        }
+      });
+
+      panel.addEventListener('click', function(ev){
+        var a = ev.target.closest('a[data-live-item]');
+        if(!a) return;
+        hide();
+      });
+    })();
+
+    (function(){
+      var mode = localStorage.getItem('vault_view_mode') || 'details';
+      applyExplorerViewMode(mode);
+    })();
   </script>
+  </div>
 {% endblock %}

@@ -60,5 +60,60 @@
 
       {% block content %}{% endblock %}
     </div>
+
+    <script>
+      (function(){
+        var MAP = {
+          'mdi:arrow-left': 'solar:arrow-left-bold-duotone',
+          'mdi:arrow-right': 'solar:arrow-right-bold-duotone',
+          'mdi:chevron-right': 'solar:alt-arrow-right-line-duotone',
+          'mdi:magnify': 'solar:magnifer-bold-duotone',
+          'mdi:download': 'solar:download-bold-duotone',
+          'mdi:folder-outline': 'solar:folder-bold-duotone',
+          'mdi:account-group-outline': 'solar:users-group-rounded-bold-duotone'
+        };
+
+        function mapIcon(name){
+          if(!name) return '';
+          if(name.startsWith('solar:')) return name;
+          if(MAP[name]) return MAP[name];
+          if(name.startsWith('mdi:')) return 'solar:question-circle-bold-duotone';
+          return name;
+        }
+
+        function remap(root){
+          var nodes = (root || document).querySelectorAll ? (root || document).querySelectorAll('[data-icon]') : [];
+          for(var i=0;i<nodes.length;i++){
+            var el = nodes[i];
+            var cur = el.getAttribute('data-icon') || '';
+            var mapped = mapIcon(cur);
+            if(mapped && mapped !== cur) el.setAttribute('data-icon', mapped);
+          }
+          if(window.Iconify && typeof window.Iconify.scan === 'function'){
+            try{ window.Iconify.scan(root || document); }catch(e){}
+          }
+        }
+
+        if(document.readyState === 'loading'){
+          document.addEventListener('DOMContentLoaded', function(){ remap(document); });
+        }else{
+          remap(document);
+        }
+
+        try{
+          var obs = new MutationObserver(function(muts){
+            for(var i=0;i<muts.length;i++){
+              var m = muts[i];
+              for(var j=0;j<m.addedNodes.length;j++){
+                var n = m.addedNodes[j];
+                if(!n || n.nodeType !== 1) continue;
+                remap(n);
+              }
+            }
+          });
+          obs.observe(document.documentElement, { childList: true, subtree: true });
+        }catch(e){}
+      })();
+    </script>
   </body>
 </html>

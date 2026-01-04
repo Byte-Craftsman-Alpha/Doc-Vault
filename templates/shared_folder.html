@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shared folder - Cloud Vault</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <style>
+      .minimal-card{background:#fff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 1px 3px rgba(15,23,42,.04);transition:.2s}
+      .minimal-card:hover{box-shadow:0 4px 12px rgba(15,23,42,.08)}
+      .minimal-btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:12px;padding:.6rem .9rem;font-weight:600;font-size:.875rem;transition:.2s}
+      .minimal-btn:focus{outline:none;box-shadow:0 0 0 4px rgba(79,70,229,.12)}
+      .minimal-btn-primary{color:#fff;background:linear-gradient(135deg,#6366f1 0%,#4f46e5 100%)}
+      .minimal-btn-primary:hover{transform:translateY(-1px);background:linear-gradient(135deg,#4f46e5 0%,#4338ca 100%);box-shadow:0 8px 22px rgba(15,23,42,.12)}
+    </style>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+    <div class="max-w-5xl mx-auto p-6 md:p-10">
+      <div class="minimal-card p-5">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="text-slate-500 text-xs uppercase tracking-wider">Shared folder</div>
+            <div class="mt-1 text-slate-900 font-semibold text-xl">{{ folder.name }}</div>
+            <div class="mt-2 text-slate-500 text-sm">Expires at {{ share.expires_at.strftime('%Y-%m-%d %H:%M') }} (UTC)</div>
+          </div>
+        </div>
+
+        <div class="mt-6 overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500">
+                <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Name</th>
+                <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Type</th>
+                <th class="text-right font-semibold px-4 py-3 border-b border-slate-200">Size</th>
+                <th class="text-left font-semibold px-4 py-3 border-b border-slate-200">Uploaded</th>
+                <th class="px-4 py-3 border-b border-slate-200"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in files %}
+                <tr class="hover:bg-slate-50">
+                  <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900">{{ f.original_filename }}</td>
+                  <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.content_type or '-' }}</td>
+                  <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
+                  <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td class="px-4 py-3 border-b border-slate-200 text-right">
+                    <a class="minimal-btn minimal-btn-primary" href="{{ url_for('shared_folder_download', token=token, file_id=f.id) }}">
+                      <span class="iconify" data-icon="solar:download-bold-duotone"></span>
+                      <span>Download</span>
+                    </a>
+                  </td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td class="px-4 py-6 text-slate-500" colspan="5">No files in this folder.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function(){
+        var MAP = {
+          'mdi:download': 'solar:download-bold-duotone'
+        };
+        function mapIcon(name){
+          if(!name) return '';
+          if(name.startsWith('solar:')) return name;
+          if(MAP[name]) return MAP[name];
+          if(name.startsWith('mdi:')) return 'solar:question-circle-bold-duotone';
+          return name;
+        }
+        function remap(root){
+          var nodes = (root || document).querySelectorAll ? (root || document).querySelectorAll('[data-icon]') : [];
+          for(var i=0;i<nodes.length;i++){
+            var el = nodes[i];
+            var cur = el.getAttribute('data-icon') || '';
+            var mapped = mapIcon(cur);
+            if(mapped && mapped !== cur) el.setAttribute('data-icon', mapped);
+          }
+          if(window.Iconify && typeof window.Iconify.scan === 'function'){
+            try{ window.Iconify.scan(root || document); }catch(e){}
+          }
+        }
+        if(document.readyState === 'loading'){
+          document.addEventListener('DOMContentLoaded', function(){ remap(document); });
+        }else{
+          remap(document);
+        }
+      })();
+    </script>
+  </body>
+</html>
