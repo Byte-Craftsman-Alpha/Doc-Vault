@@ -252,12 +252,27 @@
                         <span class="iconify" data-icon="mdi:dots-vertical"></span>
                       </button>
                       <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
-                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
-                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="mdi:rename-box-outline"></span>
+                          <span>Rename</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="mdi:trash-can-outline"></span>
+                          <span>Delete</span>
+                        </button>
                         <div class="h-px bg-slate-200 my-1"></div>
-                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
-                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
-                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="mdi:share-variant-outline"></span>
+                          <span>Share</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                          <span>Move</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                          <span>Copy</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -275,7 +290,7 @@
       <div id="explorer-root-files-tiles" class="hidden p-4">
         <div id="root-files-tiles" class="grid gap-3" data-tiles>
           {% for f in files %}
-            <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
+            <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-size-bytes="{{ f.size_bytes or 0 }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>
@@ -295,12 +310,27 @@
                       <span class="iconify" data-icon="mdi:dots-vertical"></span>
                     </button>
                     <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
-                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
-                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="mdi:rename-box-outline"></span>
+                        <span>Rename</span>
+                      </button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="mdi:trash-can-outline"></span>
+                        <span>Delete</span>
+                      </button>
                       <div class="h-px bg-slate-200 my-1"></div>
-                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
-                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
-                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="mdi:share-variant-outline"></span>
+                        <span>Share</span>
+                      </button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                        <span>Move</span>
+                      </button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                        <span>Copy</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -340,12 +370,27 @@
                         <span class="iconify" data-icon="mdi:dots-vertical"></span>
                       </button>
                       <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
-                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
-                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="mdi:rename-box-outline"></span>
+                          <span>Rename</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="mdi:trash-can-outline"></span>
+                          <span>Delete</span>
+                        </button>
                         <div class="h-px bg-slate-200 my-1"></div>
-                        <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
-                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
-                        <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">
+                          <span class="iconify" data-icon="mdi:share-variant-outline"></span>
+                          <span>Share</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                          <span>Move</span>
+                        </button>
+                        <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                          <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                          <span>Copy</span>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -363,7 +408,7 @@
       <div id="explorer-folder-files-tiles" class="hidden p-4">
         <div id="folder-files-tiles" class="grid gap-3" data-tiles>
           {% for f in files %}
-            <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
+            <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-size-bytes="{{ f.size_bytes or 0 }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>
@@ -383,12 +428,27 @@
                       <span class="iconify" data-icon="mdi:dots-vertical"></span>
                     </button>
                     <div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>
-                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">Rename</button>
-                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">Delete</button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="mdi:rename-box-outline"></span>
+                        <span>Rename</span>
+                      </button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="mdi:trash-can-outline"></span>
+                        <span>Delete</span>
+                      </button>
                       <div class="h-px bg-slate-200 my-1"></div>
-                      <button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">Share</button>
-                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>
-                      <button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="{{ f.id }}">
+                        <span class="iconify" data-icon="mdi:share-variant-outline"></span>
+                        <span>Share</span>
+                      </button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                        <span>Move</span>
+                      </button>
+                      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
+                        <span class="iconify" data-icon="solar:question-circle-bold-duotone"></span>
+                        <span>Copy</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -465,10 +525,51 @@
         <span class="iconify text-slate-500" data-icon="mdi:view-grid-outline"></span>
         <span class="text-sm font-semibold">View</span>
       </button>
-      <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>
-        <span class="iconify" data-icon="mdi:sort"></span>
-        <span class="text-sm font-semibold">Sort</span>
-      </button>
+      <div class="relative" id="context-sort-wrap">
+        <button class="w-full flex items-center justify-between gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" id="context-sort-btn">
+          <span class="flex items-center gap-2">
+            <span class="iconify text-slate-500" data-icon="mdi:sort"></span>
+            <span class="text-sm font-semibold">Sort</span>
+          </span>
+          <span class="iconify text-slate-400" data-icon="mdi:chevron-right"></span>
+        </button>
+
+        <div class="hidden fixed z-50 w-56" id="context-sort-menu">
+          <div class="minimal-card p-2 shadow-lg">
+            <div class="text-xs font-semibold text-slate-500 px-3 py-2">Sort by</div>
+
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-sort-by="name">
+              <span class="inline-block w-2 text-slate-900" data-sort-dot="by" data-sort-value="name"></span>
+              <span class="iconify text-slate-500" data-icon="solar:document-text-line-duotone"></span>
+              <span class="text-sm font-semibold">Name</span>
+            </button>
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-sort-by="uploaded">
+              <span class="inline-block w-2 text-slate-900" data-sort-dot="by" data-sort-value="uploaded"></span>
+              <span class="iconify text-slate-500" data-icon="solar:calendar-line-duotone"></span>
+              <span class="text-sm font-semibold">Date uploaded</span>
+            </button>
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-sort-by="size">
+              <span class="inline-block w-2 text-slate-900" data-sort-dot="by" data-sort-value="size"></span>
+              <span class="iconify text-slate-500" data-icon="solar:database-bold-duotone"></span>
+              <span class="text-sm font-semibold">Size</span>
+            </button>
+
+            <div class="h-px bg-slate-200 my-1"></div>
+            <div class="text-xs font-semibold text-slate-500 px-3 py-2">Order</div>
+
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-sort-dir="asc">
+              <span class="inline-block w-2 text-slate-900" data-sort-dot="dir" data-sort-value="asc"></span>
+              <span class="iconify text-slate-500" data-icon="solar:arrow-up-bold-duotone"></span>
+              <span class="text-sm font-semibold">Ascending</span>
+            </button>
+            <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-sort-dir="desc">
+              <span class="inline-block w-2 text-slate-900" data-sort-dot="dir" data-sort-value="desc"></span>
+              <span class="iconify text-slate-500" data-icon="solar:arrow-down-bold-duotone"></span>
+              <span class="text-sm font-semibold">Descending</span>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -510,11 +611,77 @@
       var b = document.getElementById('context-menu-backdrop');
       if(m) m.classList.add('hidden');
       if(b) b.classList.add('hidden');
+      hideExplorerSortMenu();
       if(m){
         m.removeAttribute('data-context-folder-id');
         m.removeAttribute('data-context-folder-open-url');
         m.removeAttribute('data-context-folder-bookmarked');
       }
+    }
+
+    function hideExplorerSortMenu(){
+      var sm = document.getElementById('context-sort-menu');
+      if(sm) sm.classList.add('hidden');
+    }
+
+    function showExplorerSortMenu(){
+      var sm = document.getElementById('context-sort-menu');
+      var btn = document.getElementById('context-sort-btn');
+      if(!sm || !btn) return;
+
+      updateExplorerSortMenuUI();
+
+      sm.classList.remove('hidden');
+      sm.style.left = '0px';
+      sm.style.top = '0px';
+
+      var vw = window.innerWidth || document.documentElement.clientWidth;
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+
+      var btnRect = btn.getBoundingClientRect();
+      var rect = sm.getBoundingClientRect();
+
+      var left = btnRect.right + 8;
+      var top = btnRect.top;
+
+      if(left + rect.width + 8 > vw){
+        left = btnRect.left - rect.width - 8;
+      }
+      if(top + rect.height + 8 > vh){
+        top = vh - rect.height - 8;
+      }
+      if(top < 8) top = 8;
+      if(left < 8) left = 8;
+      if(left + rect.width + 8 > vw) left = Math.max(8, vw - rect.width - 8);
+
+      sm.style.left = Math.round(left) + 'px';
+      sm.style.top = Math.round(top) + 'px';
+    }
+
+    function getExplorerSortState(){
+      var by = (localStorage.getItem('explorer_sort_by') || 'name').toLowerCase();
+      var dir = (localStorage.getItem('explorer_sort_dir') || 'asc').toLowerCase();
+      if(by !== 'name' && by !== 'uploaded' && by !== 'size') by = 'name';
+      if(dir !== 'asc' && dir !== 'desc') dir = 'asc';
+      return { by: by, dir: dir };
+    }
+
+    function setExplorerSortState(next){
+      if(!next) return;
+      if(next.by) localStorage.setItem('explorer_sort_by', String(next.by));
+      if(next.dir) localStorage.setItem('explorer_sort_dir', String(next.dir));
+    }
+
+    function updateExplorerSortMenuUI(){
+      var sm = document.getElementById('context-sort-menu');
+      if(!sm) return;
+      var st = getExplorerSortState();
+      sm.querySelectorAll('[data-sort-dot="by"]').forEach(function(el){
+        el.textContent = (el.getAttribute('data-sort-value') === st.by) ? '•' : '';
+      });
+      sm.querySelectorAll('[data-sort-dot="dir"]').forEach(function(el){
+        el.textContent = (el.getAttribute('data-sort-value') === st.dir) ? '•' : '';
+      });
     }
 
     function showExplorerContextMenu(x, y){
@@ -538,10 +705,20 @@
       var vw = window.innerWidth || document.documentElement.clientWidth;
       var vh = window.innerHeight || document.documentElement.clientHeight;
       var rect = m.getBoundingClientRect();
-      var left = Math.min(x, vw - rect.width - 8);
-      var top = Math.min(y, vh - rect.height - 8);
-      left = Math.max(8, left);
-      top = Math.max(8, top);
+
+      var left = x;
+      var top = y;
+
+      if(left + rect.width + 8 > vw){
+        left = x - rect.width;
+      }
+      if(top + rect.height + 8 > vh){
+        top = y - rect.height;
+      }
+
+      left = Math.max(8, Math.min(left, vw - rect.width - 8));
+      top = Math.max(8, Math.min(top, vh - rect.height - 8));
+
       m.style.left = left + 'px';
       m.style.top = top + 'px';
     }
@@ -707,6 +884,35 @@
         backdrop.addEventListener('click', function(){
           hideExplorerContextMenu();
         });
+
+        backdrop.addEventListener('contextmenu', function(ev){
+          ev.preventDefault();
+          closeAllActionMenus();
+          hideExplorerSortMenu();
+
+          var menu = document.getElementById('explorer-context-menu');
+          if(!menu) return;
+
+          var prev = backdrop.style.pointerEvents;
+          backdrop.style.pointerEvents = 'none';
+          var under = document.elementFromPoint(ev.clientX, ev.clientY);
+          backdrop.style.pointerEvents = prev;
+
+          var onSelectable = under ? under.closest('[data-selectable]') : null;
+          if(onSelectable && onSelectable.getAttribute('data-selectable') === 'folder'){
+            var folderEl = under.closest('[data-folder-row],[data-folder-tile]') || onSelectable;
+            var folderId = (folderEl.getAttribute('data-folder-row') || folderEl.getAttribute('data-folder-tile') || '').trim();
+            menu.setAttribute('data-context-folder-id', folderId);
+            menu.setAttribute('data-context-folder-open-url', folderEl.getAttribute('data-open-url') || '');
+            menu.setAttribute('data-context-folder-bookmarked', folderEl.getAttribute('data-folder-bookmarked') || '0');
+          }else{
+            menu.removeAttribute('data-context-folder-id');
+            menu.removeAttribute('data-context-folder-open-url');
+            menu.removeAttribute('data-context-folder-bookmarked');
+          }
+
+          showExplorerContextMenu(ev.clientX, ev.clientY);
+        });
       }
 
       document.addEventListener('keydown', function(ev){
@@ -785,12 +991,12 @@
             '<div class="relative" data-action-menu>'+
               '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn><span class="iconify" data-icon="mdi:dots-vertical"></span></button>'+
               '<div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'">Rename</button>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'">Delete</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:rename-box-outline"></span><span>Rename</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:trash-can-outline"></span><span>Delete</span></button>'+
                 '<div class="h-px bg-slate-200 my-1"></div>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'">Share</button>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:share-variant-outline"></span><span>Share</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Move</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Copy</span></button>'+
               '</div>'+
             '</div>'+
           '</div>'+
@@ -804,9 +1010,10 @@
       if(!container) return;
       var div = document.createElement('div');
       div.className = 'minimal-card p-3';
+      div.setAttribute('data-size-bytes', String(file.size_bytes || 0));
       div.setAttribute('data-file-tile', file.id);
-      div.setAttribute('data-selectable','file');
-      div.setAttribute('data-open-url','/file/' + file.id + '/download');
+      div.setAttribute('data-selectable', 'file');
+      div.setAttribute('data-open-url', '/file/' + file.id + '/download');
       div.innerHTML = ''+
         '<div class="flex items-center justify-between gap-3">'+
           '<div class="flex items-center gap-3 min-w-0">'+
@@ -821,12 +1028,12 @@
             '<div class="relative" data-action-menu>'+
               '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn><span class="iconify" data-icon="mdi:dots-vertical"></span></button>'+
               '<div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'">Rename</button>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'">Delete</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:rename-box-outline"></span><span>Rename</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:trash-can-outline"></span><span>Delete</span></button>'+
                 '<div class="h-px bg-slate-200 my-1"></div>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'">Share</button>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Move</button>'+
-                '<button class="w-full text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled>Copy</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:share-variant-outline"></span><span>Share</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Move</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" disabled><span class="iconify" data-icon="solar:question-circle-bold-duotone"></span><span>Copy</span></button>'+
               '</div>'+
             '</div>'+
           '</div>'+
@@ -955,31 +1162,32 @@
         ev.preventDefault();
         var a = ctxAction.getAttribute('data-context-action');
         var cm = document.getElementById('explorer-context-menu');
+        var ctxFolderId = cm ? (cm.getAttribute('data-context-folder-id') || '') : '';
+        var ctxFolderOpenUrl = cm ? (cm.getAttribute('data-context-folder-open-url') || '') : '';
+        var ctxFolderBookmarked = cm ? (cm.getAttribute('data-context-folder-bookmarked') === '1') : false;
         hideExplorerContextMenu();
 
         if(a === 'folder_open'){
-          var openUrl = cm ? cm.getAttribute('data-context-folder-open-url') : '';
-          if(openUrl) window.location.href = openUrl;
+          if(ctxFolderOpenUrl) window.location.href = ctxFolderOpenUrl;
           return;
         }
         if(a === 'folder_share'){
-          var fidShare = cm ? cm.getAttribute('data-context-folder-id') : '';
-          if(!fidShare) return;
-          var share = await createShareLink('folder', fidShare);
+          if(!ctxFolderId) return;
+          var share = await createShareLink('folder', ctxFolderId);
           if(!share) return;
           await copyText(share.url);
           alert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
           return;
         }
         if(a === 'folder_rename'){
-          var fid = cm ? cm.getAttribute('data-context-folder-id') : '';
-          var row = fid ? document.querySelector('[data-folder-row="'+fid+'"]') : null;
+          if(!ctxFolderId) return;
+          var row = document.querySelector('[data-folder-row="'+ctxFolderId+'"]');
           var currentName = row ? (row.getAttribute('data-folder-name') || '') : '';
           var name = prompt('Rename folder', currentName || '');
           if(name === null) return;
           name = String(name).trim();
           if(!name) return;
-          postAction('/folder/' + fid + '/rename', { name: name }).then(function(data){
+          postAction('/folder/' + ctxFolderId + '/rename', { name: name }).then(function(data){
             if(!data || !data.folder) return;
             updateRowFolderName(data.folder.id, data.folder.name);
             var tile = document.querySelector('[data-folder-tile="'+data.folder.id+'"]');
@@ -993,22 +1201,19 @@
           return;
         }
         if(a === 'folder_delete'){
-          var fid2 = cm ? cm.getAttribute('data-context-folder-id') : '';
-          if(!fid2) return;
+          if(!ctxFolderId) return;
           if(!confirm('Delete this folder and all its files?')) return;
-          postAction('/folder/' + fid2 + '/delete', {}).then(function(){
-            removeFolderRow(fid2);
-            var tileDel = document.querySelector('[data-folder-tile="'+fid2+'"]');
+          postAction('/folder/' + ctxFolderId + '/delete', {}).then(function(){
+            removeFolderRow(ctxFolderId);
+            var tileDel = document.querySelector('[data-folder-tile="'+ctxFolderId+'"]');
             if(tileDel) tileDel.remove();
-            sidebarRemove(fid2);
+            sidebarRemove(ctxFolderId);
           });
           return;
         }
         if(a === 'folder_pin'){
-          var fid3 = cm ? cm.getAttribute('data-context-folder-id') : '';
-          if(!fid3) return;
-          var bookmarked = cm ? (cm.getAttribute('data-context-folder-bookmarked') === '1') : false;
-          var url = '/folder/' + fid3 + (bookmarked ? '/unbookmark' : '/bookmark');
+          if(!ctxFolderId) return;
+          var url = '/folder/' + ctxFolderId + (ctxFolderBookmarked ? '/unbookmark' : '/bookmark');
           postAction(url, {}).then(function(data){
             if(!data) return;
             var folderId = data.folder_id;
@@ -1130,7 +1335,212 @@
       if(!ev.target.closest('[data-action-menu-pop]') && !ev.target.closest('#action-menu-portal')){
         closeAllActionMenus();
       }
+
+      var sortBtn = ev.target.closest('#context-sort-btn');
+      if(sortBtn){
+        ev.preventDefault();
+        showExplorerSortMenu();
+        return;
+      }
+
+      var sortByChoice = ev.target.closest('button[data-sort-by]');
+      if(sortByChoice){
+        ev.preventDefault();
+        setExplorerSortState({ by: sortByChoice.getAttribute('data-sort-by') || 'name' });
+        updateExplorerSortMenuUI();
+        applyExplorerSortFromState();
+        hideExplorerContextMenu();
+        return;
+      }
+
+      var sortDirChoice = ev.target.closest('button[data-sort-dir]');
+      if(sortDirChoice){
+        ev.preventDefault();
+        setExplorerSortState({ dir: sortDirChoice.getAttribute('data-sort-dir') || 'asc' });
+        updateExplorerSortMenuUI();
+        applyExplorerSortFromState();
+        hideExplorerContextMenu();
+        return;
+      }
     });
+
+    (function(){
+      var wrap = document.getElementById('context-sort-wrap');
+      if(!wrap) return;
+      var menu = document.getElementById('context-sort-menu');
+      if(!menu) return;
+
+      var hideTimer = null;
+      function cancelHide(){
+        if(hideTimer){
+          clearTimeout(hideTimer);
+          hideTimer = null;
+        }
+      }
+      function scheduleHide(){
+        cancelHide();
+        hideTimer = setTimeout(function(){
+          hideExplorerSortMenu();
+        }, 140);
+      }
+
+      function isOverSortArea(target){
+        if(!target || !target.closest) return false;
+        if(target.closest('#context-sort-wrap')) return true;
+        if(target.closest('#context-sort-menu')) return true;
+        return false;
+      }
+
+      wrap.addEventListener('mouseenter', function(){
+        cancelHide();
+        showExplorerSortMenu();
+      });
+      wrap.addEventListener('mouseleave', function(){
+        scheduleHide();
+      });
+
+      menu.addEventListener('mouseenter', function(){
+        cancelHide();
+      });
+      menu.addEventListener('mouseleave', function(){
+        scheduleHide();
+      });
+
+      var cm = document.getElementById('explorer-context-menu');
+      if(cm){
+        cm.addEventListener('mousemove', function(ev){
+          if(isOverSortArea(ev.target)) return;
+          var onOption = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+          if(onOption){
+            hideExplorerSortMenu();
+          }
+        }, true);
+
+        cm.addEventListener('mouseleave', function(){
+          scheduleHide();
+        });
+      }
+    })();
+
+    function parseSortableNumber(txt){
+      if(txt === null || txt === undefined) return 0;
+      var s = String(txt).trim();
+      if(!s) return 0;
+      var m = s.match(/([0-9]+(\.[0-9]+)?)/);
+      if(!m) return 0;
+      return parseFloat(m[1]) || 0;
+    }
+
+    function compareText(a, b){
+      a = (a || '').toString().toLowerCase();
+      b = (b || '').toString().toLowerCase();
+      if(a < b) return -1;
+      if(a > b) return 1;
+      return 0;
+    }
+
+    function sortChildren(container, items, cmp){
+      items.sort(cmp);
+      for(var i=0;i<items.length;i++){
+        container.appendChild(items[i].el);
+      }
+    }
+
+    function applyExplorerSortFromState(){
+      var st = getExplorerSortState();
+      var key = '';
+
+      if(st.by === 'name') key = 'files_name_' + st.dir;
+      else if(st.by === 'uploaded') key = 'files_uploaded_' + st.dir;
+      else if(st.by === 'size') key = 'files_size_' + st.dir;
+
+      applyExplorerSortKey(key, st);
+    }
+
+    function applyExplorerSortKey(key, st){
+      if(!key) return;
+      var currentFolderEl = document.getElementById('current-folder-pin');
+      var selectedFolderId = currentFolderEl ? (currentFolderEl.getAttribute('data-current-folder-id') || '') : '';
+      var mode = localStorage.getItem('vault_view_mode') || 'details';
+      var showTiles = (mode === 'tiles_small' || mode === 'tiles_large');
+
+      if(!selectedFolderId && st && st.by === 'name'){
+        var fkey = 'folders_name_' + (st.dir || 'asc');
+        if(showTiles){
+          var tiles = document.getElementById('folder-tiles');
+          if(tiles){
+            var items = Array.prototype.slice.call(tiles.querySelectorAll('[data-folder-tile]')).map(function(el){
+              var t = el.querySelector('[data-folder-tile-title]');
+              return { el: el, name: (t ? t.textContent : (el.getAttribute('data-folder-name') || '')) };
+            });
+            if(fkey === 'folders_name_asc') sortChildren(tiles, items, function(x,y){ return compareText(x.name, y.name); });
+            if(fkey === 'folders_name_desc') sortChildren(tiles, items, function(x,y){ return compareText(y.name, x.name); });
+          }
+        }else{
+          var list = document.getElementById('explorer-folders-details');
+          if(list){
+            var rows = Array.prototype.slice.call(list.querySelectorAll('[data-folder-row]')).map(function(el){
+              var t = el.querySelector('[data-folder-title]');
+              return { el: el, name: (t ? t.textContent : (el.getAttribute('data-folder-name') || '')) };
+            });
+            if(fkey === 'folders_name_asc') sortChildren(list, rows, function(x,y){ return compareText(x.name, y.name); });
+            if(fkey === 'folders_name_desc') sortChildren(list, rows, function(x,y){ return compareText(y.name, x.name); });
+          }
+        }
+      }
+
+      if(key.indexOf('files_') === 0){
+        var tbodyId = selectedFolderId ? 'folder-files-table-body' : 'root-files-table-body';
+        var tilesId = selectedFolderId ? 'folder-files-tiles' : 'root-files-tiles';
+        if(showTiles){
+          var tiles2 = document.getElementById(tilesId);
+          if(!tiles2) return;
+          var cards = Array.prototype.slice.call(tiles2.querySelectorAll('[data-file-tile]')).map(function(el){
+            var nameEl = el.querySelector('[data-file-name]');
+            var name = nameEl ? nameEl.textContent : '';
+            var meta = el.querySelector('.text-xs');
+            var metaText = meta ? meta.textContent : '';
+            var type = metaText.split('•')[0].trim();
+            var size = parseInt(el.getAttribute('data-size-bytes') || '0', 10) || 0;
+            var uploaded = '';
+            if(metaText.indexOf('•') !== -1){
+              uploaded = metaText.split('•').slice(1).join('•').trim();
+            }
+            return { el: el, name: name, type: type, modified: metaText, uploaded: uploaded, size: size };
+          });
+          if(key === 'files_name_asc') sortChildren(tiles2, cards, function(x,y){ return compareText(x.name, y.name); });
+          if(key === 'files_name_desc') sortChildren(tiles2, cards, function(x,y){ return compareText(y.name, x.name); });
+          if(key === 'files_size_desc') sortChildren(tiles2, cards, function(x,y){ return (y.size - x.size) || compareText(x.name, y.name); });
+          if(key === 'files_size_asc') sortChildren(tiles2, cards, function(x,y){ return (x.size - y.size) || compareText(x.name, y.name); });
+          if(key === 'files_uploaded_desc') sortChildren(tiles2, cards, function(x,y){ return compareText(y.uploaded, x.uploaded) || compareText(x.name, y.name); });
+          if(key === 'files_uploaded_asc') sortChildren(tiles2, cards, function(x,y){ return compareText(x.uploaded, y.uploaded) || compareText(x.name, y.name); });
+          return;
+        }
+
+        var tbody = document.getElementById(tbodyId);
+        if(!tbody) return;
+        var rows2 = Array.prototype.slice.call(tbody.querySelectorAll('tr[data-file-row]')).map(function(tr){
+          var nameEl = tr.querySelector('[data-file-name]');
+          var typeEl = tr.querySelector('[data-file-col="type"]');
+          var sizeEl = tr.querySelector('[data-file-col="size"]');
+          var modEl = tr.querySelector('[data-file-col="modified"]');
+          return {
+            el: tr,
+            name: nameEl ? nameEl.textContent : '',
+            type: typeEl ? typeEl.textContent : '',
+            size: parseSortableNumber(sizeEl ? sizeEl.textContent : ''),
+            modified: modEl ? modEl.textContent : ''
+          };
+        });
+
+        if(key === 'files_name_asc') sortChildren(tbody, rows2, function(x,y){ return compareText(x.name, y.name); });
+        if(key === 'files_name_desc') sortChildren(tbody, rows2, function(x,y){ return compareText(y.name, x.name); });
+        if(key === 'files_size_desc') sortChildren(tbody, rows2, function(x,y){ return (y.size - x.size) || compareText(x.name, y.name); });
+        if(key === 'files_size_asc') sortChildren(tbody, rows2, function(x,y){ return (x.size - y.size) || compareText(x.name, y.name); });
+        if(key === 'files_uploaded_desc') sortChildren(tbody, rows2, function(x,y){ return compareText(y.modified, x.modified) || compareText(x.name, y.name); });
+        if(key === 'files_uploaded_asc') sortChildren(tbody, rows2, function(x,y){ return compareText(x.modified, y.modified) || compareText(x.name, y.name); });
+      }
+    }
 
     function sidebarRename(folderId, name){
       var nav = document.getElementById('quick-access-folders');

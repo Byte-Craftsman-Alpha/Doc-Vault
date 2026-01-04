@@ -402,7 +402,7 @@ def create_app():
         if current_user.is_admin:
             abort(403)
         link = ShareLink.query.filter_by(id=share_id, user_id=current_user.id).first_or_404()
-        link.revoked_at = datetime.utcnow()
+        db.session.delete(link)
         db.session.commit()
         if wants_json(request):
             return jsonify({"ok": True})

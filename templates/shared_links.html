@@ -104,11 +104,14 @@
       }
       var row = document.querySelector('[data-share-row="'+shareId+'"]');
       if(row){
-        row.querySelectorAll('form.ajax-revoke').forEach(function(f){ f.remove(); });
-        var statusCell = row.children[4];
-        if(statusCell) statusCell.innerHTML = '<span class="text-rose-700 font-semibold">revoked</span>';
-        var actionCell = row.children[6];
-        if(actionCell) actionCell.innerHTML = '<span class="text-slate-400">-</span>';
+        row.remove();
+      }
+
+      var tbody = document.querySelector('table tbody');
+      if(tbody && !tbody.querySelector('[data-share-row]')){
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td class="px-4 py-6 text-slate-500" colspan="7">No shared links yet.</td>';
+        tbody.appendChild(tr);
       }
     });
   </script>
