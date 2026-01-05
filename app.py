@@ -843,6 +843,7 @@ def create_app():
     def move_file(file_id: int):
         if current_user.is_admin:
             abort(403)
+
         vf = VaultFile.query.filter_by(id=file_id, user_id=current_user.id).first_or_404()
         folder_id_raw = request.form.get("folder_id")
         try:
@@ -874,6 +875,7 @@ def create_app():
 
         vf.folder_id = target_folder_id
         db.session.commit()
+
         if wants_json(request):
             return jsonify(
                 {
@@ -895,6 +897,7 @@ def create_app():
     def copy_file(file_id: int):
         if current_user.is_admin:
             abort(403)
+
         vf = VaultFile.query.filter_by(id=file_id, user_id=current_user.id).first_or_404()
         folder_id_raw = request.form.get("folder_id")
         try:
@@ -959,6 +962,83 @@ def create_app():
             )
         return redirect(request.referrer or url_for("dashboard"))
 
+    @app.post("/file/new")
+    @login_required
+    def new_file():
+        if current_user.is_admin:
+            abort(403)
+
+        folder_id_raw = request.form.get("folder_id")
+        name = (request.form.get("name") or "").strip()
+        if not name:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "File name is required."}), 400
+            flash("File name is required.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        try:
+            target_folder_id = int(folder_id_raw)
+        except (TypeError, ValueError):
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Invalid target folder."}), 400
+            flash("Invalid target folder.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        target_folder = Folder.query.filter_by(id=target_folder_id, user_id=current_user.id).first_or_404()
+        if target_folder.name == ROOT_FOLDER_NAME:
+            target_folder = get_or_create_root_folder(current_user.id)
+            target_folder_id = target_folder.id
+
+        safe_name = secure_filename(name)
+        if not safe_name:
+            safe_name = "file.txt"
+        stored = f"{uuid.uuid4().hex}__{safe_name}"
+
+        dst_dir = os.path.join(app.config["UPLOAD_ROOT"], str(current_user.id), str(target_folder_id))
+        os.makedirs(dst_dir, exist_ok=True)
+        dst_path = os.path.join(dst_dir, stored)
+
+        try:
+            with open(dst_path, "xb"):
+                pass
+        except FileExistsError:
+            stored = f"{uuid.uuid4().hex}__{safe_name}"
+            dst_path = os.path.join(dst_dir, stored)
+            with open(dst_path, "xb"):
+                pass
+        except OSError:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Failed to create file."}), 500
+            flash("Failed to create file.", "error")
+            return redirect(request.referrer or url_for("dashboard"))
+
+        record = VaultFile(
+            user_id=current_user.id,
+            folder_id=target_folder_id,
+            original_filename=name,
+            stored_filename=stored,
+            content_type="text/plain",
+            size_bytes=0,
+        )
+        db.session.add(record)
+        db.session.commit()
+
+        if wants_json(request):
+            return jsonify(
+                {
+                    "ok": True,
+                    "file": {
+                        "id": record.id,
+                        "folder_id": record.folder_id,
+                        "original_filename": record.original_filename,
+                        "content_type": record.content_type,
+                        "size_bytes": record.size_bytes,
+                        "uploaded_at": record.uploaded_at.strftime("%Y-%m-%d %H:%M"),
+                    },
+                }
+            )
+        return redirect(request.referrer or url_for("dashboard"))
+
     @app.post("/file/<int:file_id>/delete")
     @login_required
     def delete_file(file_id: int):
@@ -978,7 +1058,6 @@ def create_app():
 
         if wants_json(request):
             return jsonify({"ok": True, "file_id": file_id})
-
         return redirect(request.referrer or url_for("dashboard"))
 
     @app.get("/admin")
