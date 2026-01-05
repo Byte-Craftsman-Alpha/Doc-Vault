@@ -29,7 +29,7 @@
             <div class="font-semibold text-slate-900 truncate">{{ vf.original_filename }}</div>
             <div class="text-xs text-slate-500 mt-1">
               Folder:
-              <a class="text-indigo-700 font-semibold hover:underline" href="{{ url_for('folder_view', folder_id=folder.id) }}">{{ folder.name }}</a>
+              <a class="text-[#101216] font-semibold hover:underline" href="{{ url_for('folder_view', folder_id=folder.id) }}">{{ folder.name }}</a>
               · Uploaded {{ vf.uploaded_at.strftime('%Y-%m-%d %H:%M') }}
               {% if vf.size_bytes %}
                 · {{ (vf.size_bytes / 1024) | round(1) }} KB

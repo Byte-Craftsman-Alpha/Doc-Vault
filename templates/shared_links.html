@@ -34,11 +34,11 @@
                 <td class="px-4 py-3 border-b border-slate-200 text-slate-600">{{ r.expires_at }}</td>
                 <td class="px-4 py-3 border-b border-slate-200">
                   {% if r.status == 'active' %}
-                    <span class="text-emerald-700 font-semibold">active</span>
+                    <span class="text-[#101216] font-semibold">active</span>
                   {% elif r.status == 'expired' %}
                     <span class="text-slate-500 font-semibold">expired</span>
                   {% else %}
-                    <span class="text-rose-700 font-semibold">revoked</span>
+                    <span class="text-[#101216] font-semibold">revoked</span>
                   {% endif %}
                 </td>
                 <td class="px-4 py-3 border-b border-slate-200">

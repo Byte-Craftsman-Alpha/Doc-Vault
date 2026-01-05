@@ -136,7 +136,7 @@
         {% for folder in folders %}
           <div class="px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50" data-folder-row="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-folder-bookmarked="{{ 1 if folder.is_bookmarked else 0 }}" data-selectable="folder" data-open-url="{{ url_for('folder_view', folder_id=folder.id) }}">
             <a class="flex items-center gap-3 min-w-0 flex-1" href="{{ url_for('folder_view', folder_id=folder.id) }}">
-              <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center">
                 <span class="iconify" data-icon="mdi:folder-outline"></span>
               </div>
               <div class="min-w-0">
@@ -180,11 +180,11 @@
           {% for folder in folders %}
             <a class="minimal-card p-3 hover:bg-slate-50 transition-none" href="{{ url_for('folder_view', folder_id=folder.id) }}" data-folder-tile="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-selectable="folder" data-open-url="{{ url_for('folder_view', folder_id=folder.id) }}">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center" data-folder-tile-icon>
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center" data-folder-tile-icon>
                   <span class="iconify" data-icon="mdi:folder-outline"></span>
                 </div>
                 <div class="min-w-0">
-                  <div class="font-semibold text-slate-900 truncate" data-folder-tile-title>{{ folder.name }}</div>
+                  <div class="text-slate-900 font-semibold truncate">{{ folder.name }}</div>
                   <div class="text-xs text-slate-500 truncate">Folder</div>
                 </div>
               </div>
@@ -463,7 +463,7 @@
     <div class="minimal-card p-2 shadow-lg">
       <div id="context-folder-actions" class="hidden">
         <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="folder_open">
-          <span class="iconify text-slate-500" data-icon="mdi:folder-open-outline"></span>
+          <span class="iconify text-slate-500" data-icon="solar:folder-open-bold-duotone"></span>
           <span class="text-sm font-semibold">Open</span>
         </button>
         <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg text-slate-400 cursor-not-allowed" type="button" data-context-action="paste" id="context-paste-folder-btn" aria-disabled="true" data-disabled="1">
@@ -844,17 +844,17 @@
     var __selectedRowCells = null;
     function clearSelection(){
       if(__selectedEl){
-        __selectedEl.classList.remove('bg-indigo-50','ring-2','ring-indigo-500');
+        __selectedEl.classList.remove('bg-slate-100','ring-2','ring-[#101216]');
         __selectedEl = null;
       }
 
       if(__selectedRowCells){
         try{
           __selectedRowCells.tds.forEach(function(td){
-            td.classList.remove('bg-indigo-50');
+            td.classList.remove('bg-slate-100');
           });
           if(__selectedRowCells.first){
-            __selectedRowCells.first.classList.remove('border-l-4','border-indigo-500');
+            __selectedRowCells.first.classList.remove('border-l-4','border-[#101216]');
           }
         } catch(e) {}
         __selectedRowCells = null;
@@ -869,12 +869,12 @@
 
       if(el.tagName === 'TR'){
         var tds = Array.prototype.slice.call(el.querySelectorAll('td'));
-        tds.forEach(function(td){ td.classList.add('bg-indigo-50'); });
+        tds.forEach(function(td){ td.classList.add('bg-slate-100'); });
         var first = tds.length ? tds[0] : null;
-        if(first) first.classList.add('border-l-4','border-indigo-500');
+        if(first) first.classList.add('border-l-4','border-[#101216]');
         __selectedRowCells = { tds: tds, first: first };
       }else{
-        el.classList.add('bg-indigo-50','ring-2','ring-indigo-500');
+        el.classList.add('bg-slate-100','ring-2','ring-[#101216]');
       }
     }
 
@@ -2339,7 +2339,7 @@
             div.setAttribute('data-selectable', 'folder');
             div.setAttribute('data-open-url', '/folder/' + folder.id);
             div.innerHTML = '<a class="flex items-center gap-3 min-w-0 flex-1" href="/folder/'+folder.id+'">'+
-              '<div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center"><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
+              '<div class="w-8 h-8 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center"><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
               '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate"></div><div class="text-xs text-slate-500"></div></div></a>'+
               '<div class="flex items-center gap-2">'+
               '<form method="post" class="ajax-form" data-ajax="json" action="/folder/'+folder.id+'/bookmark">'+
@@ -2362,7 +2362,7 @@
             tile.setAttribute('data-selectable', 'folder');
             tile.setAttribute('data-open-url', '/folder/' + folder.id);
             tile.innerHTML = '<div class="flex items-center gap-3">'+
-              '<div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center" data-folder-tile-icon><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
+              '<div class="w-10 h-10 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center" data-folder-tile-icon><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
               '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate" data-folder-tile-title></div><div class="text-xs text-slate-500 truncate">Folder</div></div>'+
               '</div>';
             tile.querySelector('[data-folder-tile-title]').textContent = folder.name;
