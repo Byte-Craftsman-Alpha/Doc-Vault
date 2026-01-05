@@ -36,11 +36,12 @@ class User(db.Model, UserMixin):
 class Folder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False, index=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey("folder.id"), nullable=True, index=True)
     name = db.Column(db.String(120), nullable=False)
     is_bookmarked = db.Column(db.Boolean, nullable=False, default=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    __table_args__ = (UniqueConstraint("user_id", "name", name="uq_folder_user_name"),)
+    __table_args__ = (UniqueConstraint("user_id", "parent_id", "name", name="uq_folder_user_parent_name"),)
 
 
 class VaultFile(db.Model):
@@ -210,12 +211,9 @@ def create_app():
             return redirect(url_for("admin_dashboard"))
         ensure_default_folders_for_user(current_user.id)
         root_folder = get_or_create_root_folder(current_user.id)
-        folders = (
-            Folder.query.filter_by(user_id=current_user.id)
-            .filter(Folder.name != ROOT_FOLDER_NAME)
-            .order_by(Folder.created_at.desc())
-            .all()
-        )
+        folders = Folder.query.filter_by(user_id=current_user.id, parent_id=root_folder.id).order_by(
+            Folder.created_at.desc()
+        ).all()
         root_files = VaultFile.query.filter_by(user_id=current_user.id, folder_id=root_folder.id).order_by(
             VaultFile.uploaded_at.desc()
         )
@@ -533,6 +531,7 @@ def create_app():
         if current_user.is_admin:
             abort(403)
         name = (request.form.get("name") or "").strip()
+        parent_id_raw = request.form.get("parent_id")
         if not name:
             flash("Folder name is required.", "error")
             if wants_json(request):
@@ -545,7 +544,26 @@ def create_app():
                 return jsonify({"ok": False, "error": "Folder name is not allowed."}), 400
             return redirect(url_for("dashboard"))
 
-        folder = Folder(user_id=current_user.id, name=name)
+        root_folder = get_or_create_root_folder(current_user.id)
+        parent_id = root_folder.id
+        if parent_id_raw is not None and str(parent_id_raw).strip() != "":
+            try:
+                parent_id = int(parent_id_raw)
+            except (TypeError, ValueError):
+                flash("Invalid parent folder.", "error")
+                if wants_json(request):
+                    return jsonify({"ok": False, "error": "Invalid parent folder."}), 400
+                return redirect(url_for("dashboard"))
+
+        if int(parent_id) != int(root_folder.id):
+            parent_folder = Folder.query.filter_by(id=parent_id, user_id=current_user.id).first()
+            if not parent_folder or parent_folder.name == ROOT_FOLDER_NAME:
+                flash("Invalid parent folder.", "error")
+                if wants_json(request):
+                    return jsonify({"ok": False, "error": "Invalid parent folder."}), 400
+                return redirect(url_for("dashboard"))
+
+        folder = Folder(user_id=current_user.id, parent_id=parent_id, name=name)
         db.session.add(folder)
         try:
             db.session.commit()
@@ -562,6 +580,7 @@ def create_app():
                     "ok": True,
                     "folder": {
                         "id": folder.id,
+                        "parent_id": folder.parent_id,
                         "name": folder.name,
                         "created_at": folder.created_at.strftime("%Y-%m-%d %H:%M"),
                         "is_bookmarked": bool(folder.is_bookmarked),
@@ -769,16 +788,19 @@ def create_app():
         if folder.name == ROOT_FOLDER_NAME:
             return redirect(url_for("dashboard"))
         root_folder = get_or_create_root_folder(current_user.id)
+        child_folders = Folder.query.filter_by(user_id=current_user.id, parent_id=folder.id).order_by(
+            Folder.created_at.desc()
+        ).all()
         files = VaultFile.query.filter_by(folder_id=folder.id, user_id=current_user.id).order_by(
             VaultFile.uploaded_at.desc()
         )
-        breadcrumbs = [("Vault", url_for("dashboard")), (folder.name, url_for("folder_view", folder_id=folder.id))]
+        breadcrumbs = build_folder_breadcrumbs(folder, root_folder)
         return render_template(
             "explorer.html",
             breadcrumbs=breadcrumbs,
             selected_folder=folder,
             selected_folder_id=folder.id,
-            folders=[],
+            folders=child_folders,
             files=files,
             root_folder_id=root_folder.id,
         )
@@ -1162,17 +1184,17 @@ def ensure_default_admin():
 
 
 def ensure_default_folders_for_user(user_id: int):
-    get_or_create_root_folder(user_id)
+    root = get_or_create_root_folder(user_id)
     existing_names = {
         row[0]
-        for row in Folder.query.filter_by(user_id=user_id).with_entities(Folder.name).all()
+        for row in Folder.query.filter_by(user_id=user_id, parent_id=root.id).with_entities(Folder.name).all()
     }
 
     created = False
     for name in DEFAULT_FOLDERS:
         if name in existing_names:
             continue
-        db.session.add(Folder(user_id=user_id, name=name, is_bookmarked=True))
+        db.session.add(Folder(user_id=user_id, parent_id=root.id, name=name, is_bookmarked=True))
         created = True
 
     if created:
@@ -1184,10 +1206,31 @@ def get_or_create_root_folder(user_id: int) -> Folder:
     if folder:
         return folder
 
-    folder = Folder(user_id=user_id, name=ROOT_FOLDER_NAME, is_bookmarked=False)
+    folder = Folder(user_id=user_id, parent_id=None, name=ROOT_FOLDER_NAME, is_bookmarked=False)
     db.session.add(folder)
     db.session.commit()
     return folder
+
+
+def build_folder_breadcrumbs(folder: Folder, root_folder: Folder):
+    crumbs = [("Vault", url_for("dashboard"))]
+    current = folder
+    seen = set()
+    chain = []
+    while current and current.id not in seen:
+        seen.add(current.id)
+        if current.name == ROOT_FOLDER_NAME:
+            break
+        chain.append(current)
+        if current.parent_id is None:
+            break
+        if int(current.parent_id) == int(root_folder.id):
+            break
+        current = Folder.query.filter_by(id=current.parent_id, user_id=current.user_id).first()
+
+    for f in reversed(chain):
+        crumbs.append((f.name, url_for("folder_view", folder_id=f.id)))
+    return crumbs
 
 
 def ensure_default_folders_for_all_users():
@@ -1214,6 +1257,89 @@ def ensure_schema():
     if "is_bookmarked" not in cols:
         db.session.execute(db.text("ALTER TABLE folder ADD COLUMN is_bookmarked BOOLEAN NOT NULL DEFAULT 0"))
         db.session.commit()
+
+    if "parent_id" not in cols:
+        db.session.execute(db.text("ALTER TABLE folder ADD COLUMN parent_id INTEGER"))
+        db.session.commit()
+
+    # Ensure root folders have parent_id NULL
+    try:
+        db.session.execute(db.text("UPDATE folder SET parent_id = NULL WHERE name = :root"), {"root": ROOT_FOLDER_NAME})
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    # Move legacy top-level folders under root folder per user
+    try:
+        user_ids = [row[0] for row in db.session.execute(db.text("SELECT id FROM user")).fetchall()]
+        for uid in user_ids:
+            root = Folder.query.filter_by(user_id=uid, name=ROOT_FOLDER_NAME).first()
+            if not root:
+                continue
+            db.session.execute(
+                db.text("UPDATE folder SET parent_id = :root_id WHERE user_id = :uid AND name != :root AND parent_id IS NULL"),
+                {"root_id": root.id, "uid": uid, "root": ROOT_FOLDER_NAME},
+            )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    # Replace old unique index/constraint if present and ensure new unique index exists
+    try:
+        idx_rows = db.session.execute(db.text("PRAGMA index_list(folder)")).fetchall()
+        idx_names = [r[1] for r in idx_rows]
+        # Detect legacy uniqueness on (user_id, name). In SQLite, this may be an autoindex created
+        # for a UNIQUE constraint, which cannot be dropped directly, so we rebuild the table.
+        legacy_unique_user_name = False
+        for r in idx_rows:
+            idx_name = r[1]
+            is_unique = bool(r[2])
+            if not is_unique:
+                continue
+            cols = [c[2] for c in db.session.execute(db.text(f"PRAGMA index_info({idx_name})")).fetchall()]
+            if cols == ["user_id", "name"]:
+                legacy_unique_user_name = True
+                break
+
+        if legacy_unique_user_name:
+            db.session.execute(db.text("PRAGMA foreign_keys=OFF"))
+            db.session.execute(
+                db.text(
+                    "CREATE TABLE folder__new ("
+                    "id INTEGER NOT NULL PRIMARY KEY, "
+                    "user_id INTEGER NOT NULL, "
+                    "parent_id INTEGER, "
+                    "name VARCHAR(120) NOT NULL, "
+                    "is_bookmarked BOOLEAN NOT NULL DEFAULT 0, "
+                    "created_at DATETIME NOT NULL, "
+                    "CONSTRAINT uq_folder_user_parent_name UNIQUE (user_id, parent_id, name), "
+                    "FOREIGN KEY(user_id) REFERENCES user(id), "
+                    "FOREIGN KEY(parent_id) REFERENCES folder__new(id)"
+                    ")"
+                )
+            )
+            db.session.execute(
+                db.text(
+                    "INSERT INTO folder__new (id, user_id, parent_id, name, is_bookmarked, created_at) "
+                    "SELECT id, user_id, parent_id, name, is_bookmarked, created_at FROM folder"
+                )
+            )
+            db.session.execute(db.text("DROP TABLE folder"))
+            db.session.execute(db.text("ALTER TABLE folder__new RENAME TO folder"))
+            db.session.execute(db.text("CREATE INDEX IF NOT EXISTS ix_folder_user_id ON folder(user_id)"))
+            db.session.execute(db.text("CREATE INDEX IF NOT EXISTS ix_folder_parent_id ON folder(parent_id)"))
+            db.session.execute(db.text("PRAGMA foreign_keys=ON"))
+            db.session.commit()
+        else:
+            if "uq_folder_user_name" in idx_names:
+                db.session.execute(db.text("DROP INDEX uq_folder_user_name"))
+            if "uq_folder_user_parent_name" not in idx_names:
+                db.session.execute(
+                    db.text("CREATE UNIQUE INDEX uq_folder_user_parent_name ON folder(user_id, parent_id, name)")
+                )
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 def wants_json(req) -> bool:

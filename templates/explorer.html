@@ -63,6 +63,7 @@
           <div class="minimal-card p-4">
             <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">New folder</div>
             <form class="flex gap-3 ajax-form" method="post" action="{{ url_for('create_folder') }}" data-ajax="json">
+              <input type="hidden" name="parent_id" id="new-folder-parent-id" value="{{ selected_folder_id or root_folder_id or '' }}" />
               <input class="minimal-input" id="new-folder-input" name="name" placeholder="Folder name" required />
               <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">
                 <span class="iconify" data-icon="mdi:folder-plus-outline"></span>
@@ -131,7 +132,6 @@
 
       <div class="flex-1 min-h-0 overflow-auto" id="explorer-content-area">
 
-    {% if not selected_folder %}
       <div id="explorer-folders-details" class="divide-y divide-slate-200">
         {% for folder in folders %}
           <div class="px-4 py-3 flex items-center justify-between gap-4 hover:bg-slate-50" data-folder-row="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-folder-bookmarked="{{ 1 if folder.is_bookmarked else 0 }}" data-selectable="folder" data-open-url="{{ url_for('folder_view', folder_id=folder.id) }}">
@@ -195,6 +195,7 @@
 
       <div class="border-t border-slate-200"></div>
 
+    {% if not selected_folder %}
       <div id="explorer-root-files-details" class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
@@ -492,7 +493,7 @@
       <div class="relative" id="context-new-wrap">
         <button class="w-full flex items-center justify-between gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" id="context-new-btn" data-context-action="new">
           <span class="flex items-center gap-2">
-            <span class="iconify text-slate-500" data-icon="mdi:plus-box-outline"></span>
+            <span class="iconify text-slate-500" data-icon="solar:add-square-outline"></span>
             <span class="text-sm font-semibold">New</span>
           </span>
           <span class="iconify text-slate-400" data-icon="mdi:chevron-right"></span>
@@ -502,7 +503,7 @@
           <div class="minimal-card p-2 shadow-lg">
             <div class="text-xs font-semibold text-slate-500 px-3 py-2">New</div>
             <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="new_file">
-              <span class="iconify text-slate-500" data-icon="mdi:file-plus-outline"></span>
+              <span class="iconify text-slate-500" data-icon="solar:file-text-line-duotone"></span>
               <span class="text-sm font-semibold">New file</span>
             </button>
             <button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-context-action="new_folder">
@@ -625,6 +626,10 @@
     function toggleExplorerNewMenu(){
       var el = document.getElementById('explorer-new-menu');
       if(!el) return;
+      var pid = document.getElementById('new-folder-parent-id');
+      if(pid){
+        pid.value = getCurrentFolderId();
+      }
       el.classList.toggle('hidden');
     }
 
