@@ -315,9 +315,22 @@ def create_app():
         if current_user.is_admin:
             abort(403)
 
-        item_type = (request.form.get("item_type") or "").strip().lower()
-        item_id_raw = (request.form.get("item_id") or "").strip()
-        minutes = parse_share_minutes(request.form.get("minutes"))
+        payload = request.get_json(silent=True) if request.is_json else None
+        if not isinstance(payload, dict):
+            payload = {}
+
+        item_type = ((payload.get("item_type") or request.form.get("item_type")) or "").strip().lower()
+        item_id_raw = ((payload.get("item_id") or request.form.get("item_id")) or "").strip()
+        minutes_raw = (
+            payload.get("minutes")
+            if payload.get("minutes") is not None
+            else payload.get("expires_in_minutes")
+            if payload.get("expires_in_minutes") is not None
+            else request.form.get("minutes")
+            if request.form.get("minutes") is not None
+            else request.form.get("expires_in_minutes")
+        )
+        minutes = parse_share_minutes(minutes_raw)
         try:
             item_id = int(item_id_raw)
         except (TypeError, ValueError):
@@ -367,14 +380,11 @@ def create_app():
         link = get_active_share_or_404(token)
         if link.item_type == "file":
             vf = VaultFile.query.filter_by(id=link.item_id, user_id=link.user_id).first_or_404()
-            target_path = os.path.join(app.config["UPLOAD_ROOT"], str(vf.user_id), str(vf.folder_id), vf.stored_filename)
-            if not os.path.exists(target_path):
-                abort(404)
-            return send_file(
-                target_path,
-                as_attachment=True,
-                download_name=vf.original_filename,
-                mimetype=vf.content_type or "application/octet-stream",
+            return render_template(
+                "shared_file.html",
+                share=link,
+                file=vf,
+                token=token,
             )
 
         folder = Folder.query.filter_by(id=link.item_id, user_id=link.user_id).first_or_404()
@@ -387,6 +397,23 @@ def create_app():
             folder=folder,
             files=files,
             token=token,
+        )
+
+    @app.get("/s/<token>/download")
+    def shared_file_download(token: str):
+        link = get_active_share_or_404(token)
+        if link.item_type != "file":
+            abort(404)
+
+        vf = VaultFile.query.filter_by(id=link.item_id, user_id=link.user_id).first_or_404()
+        target_path = os.path.join(app.config["UPLOAD_ROOT"], str(vf.user_id), str(vf.folder_id), vf.stored_filename)
+        if not os.path.exists(target_path):
+            abort(404)
+        return send_file(
+            target_path,
+            as_attachment=True,
+            download_name=vf.original_filename,
+            mimetype=vf.content_type or "application/octet-stream",
         )
 
     @app.get("/s/<token>/file/<int:file_id>/download")
