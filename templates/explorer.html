@@ -1305,7 +1305,7 @@
         hideOverlay();
         var target = getDropTarget();
         if(!target.folderId){
-          alert('Upload folder not available.');
+          vaultAlert('Upload folder not available.');
           return;
         }
         dropFile = ev.dataTransfer.files[0];
@@ -1323,7 +1323,7 @@
         if(!dropFile) return;
         var target = getDropTarget();
         if(!target.folderId){
-          alert('Upload folder not available.');
+          vaultAlert('Upload folder not available.');
           return;
         }
         uploadBtn.disabled = true;
@@ -1334,7 +1334,7 @@
           var res = await fetch('/upload', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd });
           var data = await res.json().catch(function(){ return null; });
           if(!res.ok || !data || data.ok === false){
-            alert((data && data.error) ? data.error : 'Upload failed');
+            vaultAlert((data && data.error) ? data.error : 'Upload failed');
             return;
           }
           if(data.file){
@@ -1389,7 +1389,7 @@
         if(a === 'new_file'){
           var targetFolderId = ctxFolderId || selectedFolderId || rootFolderId;
           if(!targetFolderId) return;
-          var fname = prompt('New file name', 'New file.txt');
+          var fname = await vaultPrompt('New file name', 'New file.txt', 'New file');
           if(fname === null) return;
           fname = String(fname).trim();
           if(!fname) return;
@@ -1400,7 +1400,7 @@
             addFileRowTo(selectedFolderId ? 'folder-files-table-body' : 'root-files-table-body', created.file);
             addFileTileTo(selectedFolderId ? 'folder-files-tiles' : 'root-files-tiles', created.file);
           }
-          notify('Created: ' + (created.file.original_filename || fname) + '.');
+          vaultAlert('Created: ' + (created.file.original_filename || fname) + '.');
           return;
         }
 
@@ -1413,14 +1413,14 @@
           var share = await createShareLink('folder', ctxFolderId);
           if(!share) return;
           await copyText(share.url);
-          alert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
+          vaultAlert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
           return;
         }
         if(a === 'folder_rename'){
           if(!ctxFolderId) return;
           var row = document.querySelector('[data-folder-row="'+ctxFolderId+'"]');
           var currentName = row ? (row.getAttribute('data-folder-name') || '') : '';
-          var name = prompt('Rename folder', currentName || '');
+          var name = await vaultPrompt('Rename folder', currentName || '', 'Rename folder');
           if(name === null) return;
           name = String(name).trim();
           if(!name) return;
@@ -1439,7 +1439,7 @@
         }
         if(a === 'folder_delete'){
           if(!ctxFolderId) return;
-          if(!confirm('Delete this folder and all its files?')) return;
+          if(!await vaultConfirm('Delete this folder and all its files?', 'Delete folder')) return;
           postAction('/folder/' + ctxFolderId + '/delete', {}).then(function(){
             removeFolderRow(ctxFolderId);
             var tileDel = document.querySelector('[data-folder-tile="'+ctxFolderId+'"]');
@@ -1468,7 +1468,7 @@
 
         if(a === 'paste'){
           if(ctxAction.getAttribute('data-disabled') === '1' || ctxAction.getAttribute('aria-disabled') === 'true'){
-            notify('Nothing to paste. Use Copy/Cut on a file first.');
+            vaultAlert('Nothing to paste. Use Copy/Cut on a file first.');
             return;
           }
           var target = getPasteTargetFromUI();
@@ -1634,7 +1634,7 @@
         window.__fileClipboard = { mode: mode, fileId: String(fileId), fromFolderId: String(fromFolderId) };
         saveFileClipboard(window.__fileClipboard);
         await writeDeviceClipboard(window.__fileClipboard);
-        notify((mode === 'cut' ? 'Cut' : 'Copied') + '. Now paste with Ctrl+V or context menu.');
+        vaultAlert((mode === 'cut' ? 'Cut' : 'Copied') + '. Now paste with Ctrl+V or context menu.');
         return;
       }
 
@@ -1916,30 +1916,30 @@
       if(row) row.remove();
     }
 
-    async function postAction(url, params){
+    async function postAction(url, payload){
       var options = {
         method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'Accept': 'application/json',
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-        },
-        body: new URLSearchParams(params || {}).toString()
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload || {})
       };
       var res = await fetch(url, options);
       var data = await res.json().catch(function(){ return null; });
       if(!res.ok || !data || data.ok === false){
-        alert((data && data.error) ? data.error : 'Request failed');
+        vaultAlert((data && data.error) ? data.error : 'Request failed');
         return null;
       }
       return data;
     }
 
     async function createShareLink(itemType, itemId){
-      var minutes = prompt('Share duration (minutes)', '30');
+      var minutes = await vaultPrompt('Share duration (minutes)', '30', 'Share');
       if(minutes === null) return null;
       minutes = String(minutes).trim();
       if(!minutes) minutes = '30';
+      if(!/^\d+$/.test(minutes)){
+        vaultAlert('Invalid minutes.');
+        return null;
+      }
       var data = await postAction('/share', { item_type: itemType, item_id: itemId, minutes: minutes });
       if(!data || !data.share || !data.share.url) return null;
       return data.share;
@@ -1966,7 +1966,7 @@
 
     function notify(msg){
       if(!msg) return;
-      alert(msg);
+      vaultAlert(msg);
     }
 
     function loadFileClipboard(){
@@ -2096,13 +2096,13 @@
       }
 
       if(!clip || !clip.fileId || !(clip.mode === 'cut' || clip.mode === 'copy')){
-        notify('Nothing to paste. Use Copy/Cut on a file first.');
+        vaultAlert('Nothing to paste. Use Copy/Cut on a file first.');
         return;
       }
 
       if(clip.mode === 'cut' && String(targetFolderId) === String(clip.fromFolderId)){
         clearFileClipboard();
-        notify('Clipboard cleared (same folder).');
+        vaultAlert('Clipboard cleared (same folder).');
         return;
       }
 
@@ -2122,7 +2122,7 @@
           addFileTileTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-tiles' : 'folder-files-tiles', dataPaste.file);
         }
         clearFileClipboard();
-        notify('Moved to ' + (targetFolderName || 'destination') + '.');
+        vaultAlert('Moved to ' + (targetFolderName || 'destination') + '.');
         return;
       }
 
@@ -2130,7 +2130,7 @@
         addFileRowTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-table-body' : 'folder-files-table-body', dataPaste.file);
         addFileTileTo((currentFolderId === '{{ root_folder_id or "" }}') ? 'root-files-tiles' : 'folder-files-tiles', dataPaste.file);
       }
-      notify('Copied to ' + (targetFolderName || 'destination') + '.');
+      vaultAlert('Copied to ' + (targetFolderName || 'destination') + '.');
     }
 
     document.addEventListener('click', async function(ev){
@@ -2164,7 +2164,7 @@
           nameClip = n2 ? n2.textContent : '';
         }
         if(nameClip) await copyText(nameClip);
-        notify(((action === 'file-cut') ? 'Cut' : 'Copied') + (nameClip ? (': ' + nameClip) : '') + '. Now right-click a folder and choose Paste.');
+        vaultAlert(((action === 'file-cut') ? 'Cut' : 'Copied') + (nameClip ? (': ' + nameClip) : '') + '. Now right-click a folder and choose Paste.');
         return;
       }
 
@@ -2174,7 +2174,7 @@
         var folderId = btn.getAttribute('data-folder-id');
         var row = document.querySelector('[data-folder-row="'+folderId+'"]');
         var currentName = row ? row.getAttribute('data-folder-name') : '';
-        var name = prompt('Rename folder', currentName || '');
+        var name = await vaultPrompt('Rename folder', currentName || '', 'Rename folder');
         if(name === null) return;
         name = String(name).trim();
         if(!name) return;
@@ -2195,7 +2195,7 @@
         ev.preventDefault();
         closeAllActionMenus();
         var folderIdDel = btn.getAttribute('data-folder-id');
-        if(!confirm('Delete this folder and all its files?')) return;
+        if(!await vaultConfirm('Delete this folder and all its files?', 'Delete folder')) return;
         var dataDel = await postAction('/folder/' + folderIdDel + '/delete', {});
         if(!dataDel) return;
         removeFolderRow(folderIdDel);
@@ -2212,7 +2212,7 @@
         var rowFile = document.querySelector('[data-file-row="'+fileId+'"]');
         var label = rowFile ? rowFile.querySelector('[data-file-name]') : null;
         var currentFileName = label ? label.textContent : '';
-        var newFileName = prompt('Rename file', currentFileName || '');
+        var newFileName = await vaultPrompt('Rename file', currentFileName || '', 'Rename file');
         if(newFileName === null) return;
         newFileName = String(newFileName).trim();
         if(!newFileName) return;
@@ -2231,7 +2231,7 @@
         ev.preventDefault();
         closeAllActionMenus();
         var fileIdDel = btn.getAttribute('data-file-id');
-        if(!confirm('Delete this file?')) return;
+        if(!await vaultConfirm('Delete this file?', 'Delete file')) return;
         var dataFileDel = await postAction('/file/' + fileIdDel + '/delete', {});
         if(!dataFileDel) return;
         removeFileRow(fileIdDel);
@@ -2248,7 +2248,7 @@
         var share = await createShareLink('file', fileIdShare);
         if(!share) return;
         await copyText(share.url);
-        alert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
+        vaultAlert('Share link created (copied):\n' + share.url + '\n\nExpires: ' + (share.expires_at || ''));
         return;
       }
     });
@@ -2310,7 +2310,7 @@
       var res = await fetch(url, options);
       var data = await res.json().catch(function(){ return null; });
       if(!res.ok || !data || data.ok === false){
-        alert((data && data.error) ? data.error : 'Request failed');
+        vaultAlert((data && data.error) ? data.error : 'Request failed');
         return;
       }
 

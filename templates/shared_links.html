@@ -99,7 +99,7 @@
       var res = await fetch(action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
       var data = await res.json().catch(function(){ return null; });
       if(!res.ok || !data || data.ok === false){
-        alert((data && data.error) ? data.error : 'Revoke failed');
+        vaultAlert((data && data.error) ? data.error : 'Revoke failed');
         return;
       }
       var row = document.querySelector('[data-share-row="'+shareId+'"]');
