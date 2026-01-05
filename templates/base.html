@@ -60,6 +60,7 @@
         <div class="mt-10 minimal-card p-4">
           <div class="text-xs uppercase tracking-wider text-slate-500">Signed in as</div>
           <div class="mt-2 font-semibold text-slate-900">{{ current_user.username }}</div>
+          <a class="minimal-btn w-full bg-slate-100 hover:bg-slate-200 text-slate-800 mt-3" href="{{ url_for('account') }}">Account</a>
           <form class="mt-4" method="post" action="{{ url_for('logout') }}">
             <button class="minimal-btn w-full bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">Logout</button>
           </form>

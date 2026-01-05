@@ -230,6 +230,55 @@ def create_app():
             root_folder_id=root_folder.id,
         )
 
+    @app.get("/account")
+    @login_required
+    def account():
+        if current_user.is_admin:
+            abort(403)
+        return render_template("account.html")
+
+    @app.post("/account/password")
+    @login_required
+    def change_password():
+        if current_user.is_admin:
+            abort(403)
+
+        current_pw = request.form.get("current_password") or ""
+        new_pw = request.form.get("new_password") or ""
+        new_pw2 = request.form.get("new_password2") or ""
+
+        if not check_password_hash(current_user.password_hash, current_pw):
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "Current password is incorrect."}), 400
+            flash("Current password is incorrect.", "error")
+            return redirect(url_for("account"))
+
+        if not new_pw:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "New password is required."}), 400
+            flash("New password is required.", "error")
+            return redirect(url_for("account"))
+
+        if len(new_pw) < 6:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "New password must be at least 6 characters."}), 400
+            flash("New password must be at least 6 characters.", "error")
+            return redirect(url_for("account"))
+
+        if new_pw != new_pw2:
+            if wants_json(request):
+                return jsonify({"ok": False, "error": "New passwords do not match."}), 400
+            flash("New passwords do not match.", "error")
+            return redirect(url_for("account"))
+
+        current_user.password_hash = generate_password_hash(new_pw)
+        db.session.commit()
+
+        if wants_json(request):
+            return jsonify({"ok": True})
+        flash("Password updated.", "success")
+        return redirect(url_for("account"))
+
     def build_public_share_url(token: str) -> str:
         return url_for("shared_access", token=token, _external=True)
 

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Account - Cloud Vault{% endblock %}
+
+{% block content %}
+  <div class="max-w-2xl">
+    <div class="minimal-card p-5">
+      <div class="text-xs uppercase tracking-wider text-slate-500">Account</div>
+      <div class="text-xl font-semibold text-slate-900 mt-1">Change password</div>
+      <div class="text-slate-500 mt-1">Update your password for this account.</div>
+
+      <form class="mt-6 space-y-4" method="post" action="{{ url_for('change_password') }}">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Current password</label>
+          <input class="minimal-input" type="password" name="current_password" autocomplete="current-password" required />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">New password</label>
+          <input class="minimal-input" type="password" name="new_password" autocomplete="new-password" required />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Confirm new password</label>
+          <input class="minimal-input" type="password" name="new_password2" autocomplete="new-password" required />
+        </div>
+
+        <div class="pt-2">
+          <button class="minimal-btn minimal-btn-primary" type="submit">Update password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
