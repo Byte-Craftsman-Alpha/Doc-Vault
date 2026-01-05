@@ -1,6 +1,6 @@
-# Cloud Vault (Flask + SQLite)
+# MewDrive (Flask + SQLite)
 
-Explorer-style “cloud vault” built with Flask. Users can create folders, upload any documents, pin folders to Quick access, and search. Admins can monitor any user’s vault.
+Explorer-style drive built with Flask. Users can create folders, upload any documents, pin folders to Quick access, and search. Admins can monitor any user’s drive.
 
 ## Features
 

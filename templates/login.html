@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login - Cloud Vault</title>
+    <title>Login - MewDrive</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
@@ -11,8 +12,8 @@
   <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-6 text-slate-800">
     <div class="w-full max-w-md">
       <div class="text-center mb-6">
-        <div class="mx-auto w-16 h-16 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-gradient-to-br from-indigo-500 to-purple-600"></div>
-        <div class="mt-4 text-[11px] uppercase tracking-[0.2em] text-slate-500">Cloud Vault</div>
+        <img class="mx-auto w-16 h-16 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] object-cover" src="{{ url_for('static', filename='logo/logo.png') }}" alt="Logo" />
+        <div class="mt-4 text-[11px] uppercase tracking-[0.2em] text-slate-500">MewDrive</div>
         <div class="text-2xl font-semibold text-slate-900">Welcome back</div>
         <div class="text-slate-500 mt-1">Sign in to access your folders</div>
       </div>

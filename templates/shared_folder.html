@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Shared folder - Cloud Vault</title>
+    <title>Shared folder - MewDrive</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
     <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
     <style>
@@ -20,7 +21,10 @@
       <div class="minimal-card p-5">
         <div class="flex items-start justify-between gap-4">
           <div>
-            <div class="text-slate-500 text-xs uppercase tracking-wider">Shared folder</div>
+            <div class="flex items-center gap-3">
+              <img class="w-10 h-10 rounded-2xl object-cover" src="{{ url_for('static', filename='logo/logo.png') }}" alt="Logo" />
+              <div class="text-slate-500 text-xs uppercase tracking-wider">Shared folder</div>
+            </div>
             <div class="mt-1 text-slate-900 font-semibold text-xl">{{ folder.name }}</div>
             <div class="mt-2 text-slate-500 text-sm">Expires at {{ share.expires_at.strftime('%Y-%m-%d %H:%M') }} (UTC)</div>
           </div>

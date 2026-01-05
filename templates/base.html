@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Cloud Vault{% endblock %}</title>
+    <title>{% block title %}MewDrive{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
@@ -48,9 +49,9 @@
     <div class="min-h-screen flex flex-col md:flex-row">
       <aside class="p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-white/60 backdrop-blur md:w-[280px] shrink-0">
         <div class="flex items-center gap-3 mb-8">
-          <div class="w-10 h-10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] bg-gradient-to-br from-indigo-500 to-purple-600"></div>
+          <img class="w-10 h-10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] object-cover" src="{{ url_for('static', filename='logo/logo.png') }}" alt="Logo" />
           <div>
-            <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500">Cloud Vault</div>
+            <div class="text-[11px] uppercase tracking-[0.2em] text-slate-500">MewDrive</div>
             <div class="font-semibold text-slate-900">Your documents</div>
           </div>
         </div>

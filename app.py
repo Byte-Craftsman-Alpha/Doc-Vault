@@ -120,6 +120,14 @@ def create_app():
             return {"sidebar_folders": pinned_folders, "all_folders": all_folders}
         return {"sidebar_folders": [], "all_folders": []}
 
+    @app.get("/logo.png")
+    def logo_png():
+        return redirect(url_for("static", filename="logo/logo.png"))
+
+    @app.get("/favicon.ico")
+    def favicon_ico():
+        return redirect(url_for("static", filename="logo/logo.png"))
+
     @app.get("/")
     def index():
         if current_user.is_authenticated:
