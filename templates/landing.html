@@ -1,0 +1,730 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MewDrive — by Team Paradox</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.15/dist/tailwind.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+    <style>
+      :root{--brand:#101216}
+      html{scroll-behavior:smooth}
+      .brand{color:var(--brand)}
+      .brand-bg{background:var(--brand)}
+      .brand-ring:focus{outline:none;box-shadow:0 0 0 6px rgba(16,18,22,.14)}
+      .glass{background:rgba(255,255,255,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+      .grid-fade{background-image:radial-gradient(circle at 1px 1px, rgba(16,18,22,.12) 1px, transparent 0);background-size:22px 22px}
+      .reveal{opacity:0;transform:translateY(10px);transition:opacity .6s ease, transform .6s ease}
+      .reveal.is-visible{opacity:1;transform:none}
+      .soft-shadow{box-shadow:0 30px 90px rgba(15,23,42,.12),0 2px 10px rgba(15,23,42,.06)}
+      .card{background:#fff;border:1px solid #e2e8f0;border-radius:18px}
+      .pill{border:1px solid #e2e8f0;border-radius:999px}
+      .kbd{border:1px solid #e2e8f0;border-bottom-width:3px;border-radius:10px;padding:.15rem .45rem;background:#fff}
+      .shimmer{position:relative;overflow:hidden}
+      .shimmer:before{content:"";position:absolute;inset:-200%;background:linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);transform:translateX(-40%);animation:shimmer 2.8s infinite}
+      @keyframes shimmer{0%{transform:translateX(-40%)}50%{transform:translateX(40%)}100%{transform:translateX(40%)}}
+    </style>
+  </head>
+  <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+    <div class="fixed inset-0 -z-10 grid-fade opacity-40"></div>
+
+    <header class="sticky top-0 z-50 border-b border-slate-200">
+      <div class="glass">
+        <div class="mx-auto max-w-6xl px-5">
+          <div class="h-16 flex items-center justify-between gap-4">
+            <a class="flex items-center gap-3" href="#top" aria-label="MewDrive home">
+              <img class="w-10 h-10 rounded-2xl object-cover soft-shadow" src="{{ url_for('static', filename='logo/logo.png') }}" alt="MewDrive logo" />
+              <div class="leading-tight">
+                <div class="text-[11px] uppercase tracking-[0.22em] text-slate-500">MewDrive</div>
+                <div class="text-sm font-semibold text-slate-900">by Team Paradox</div>
+              </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-1 text-sm font-semibold text-slate-600">
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900" href="#overview">Overview</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900" href="#achievements">Achievements</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900" href="#features">Features</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900" href="#community">Team</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100 hover:text-slate-900" href="#contact">Get in touch</a>
+            </nav>
+
+            <div class="flex items-center gap-2">
+              <a class="hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100" href="{{ url_for('login') }}">
+                <span class="iconify" data-icon="mdi:login"></span>
+                <span>Login</span>
+              </a>
+              <a class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold text-white brand-bg hover:bg-[#0b0d10] transition brand-ring" href="{{ url_for('signup') }}">
+                <span class="iconify" data-icon="mdi:rocket-launch"></span>
+                <span>Get started</span>
+              </a>
+              <button class="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-slate-200 bg-white hover:bg-slate-50" type="button" id="mobile-menu-btn" aria-label="Open menu">
+                <span class="iconify text-xl" data-icon="mdi:menu"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="md:hidden hidden pb-4" id="mobile-menu">
+            <div class="grid gap-2 text-sm font-semibold text-slate-700">
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#overview">Overview</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#achievements">Achievements</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#features">Features</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#community">Team</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#contact">Get in touch</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="{{ url_for('login') }}">Login</a>
+              <a class="px-3 py-2 rounded-xl brand-bg text-white" href="{{ url_for('signup') }}">Get started</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="mx-auto max-w-6xl px-5 pt-12 pb-10">
+        <div class="grid lg:grid-cols-2 gap-10 items-center">
+          <div class="reveal">
+            <div class="inline-flex items-center gap-2 pill bg-white px-3 py-2 text-xs font-semibold text-slate-600">
+              <span class="inline-flex items-center justify-center w-7 h-7 rounded-full brand-bg text-white">
+                <span class="iconify" data-icon="mdi:lan"></span>
+              </span>
+              <span>Local network. Explorer-like UI. Share in seconds.</span>
+            </div>
+
+            <h1 class="mt-5 text-4xl sm:text-5xl font-semibold tracking-tight text-slate-900">
+              A centralized vault for your local documents —
+              <span class="brand">built to feel familiar.</span>
+            </h1>
+
+            <p class="mt-4 text-lg text-slate-600 leading-relaxed">
+              MewDrive is a student-driven platform from <span class="font-semibold text-slate-900">Team Paradox</span>,
+              designed to help you upload, organize, and share files seamlessly across devices on a local network —
+              <span class="font-semibold text-slate-900">without extra storage devices</span>.
+            </p>
+
+            <div class="mt-7 flex flex-col sm:flex-row gap-3">
+              <a class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl brand-bg text-white font-semibold hover:bg-[#0b0d10] transition brand-ring" href="{{ url_for('signup') }}">
+                <span class="iconify" data-icon="mdi:arrow-right"></span>
+                <span>Launch my vault</span>
+              </a>
+              <a class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-50 transition" href="#features">
+                <span class="iconify" data-icon="mdi:compass-outline"></span>
+                <span>Explore features</span>
+              </a>
+            </div>
+
+            <div class="mt-8 grid grid-cols-2 gap-3 text-sm text-slate-600">
+              <div class="card p-4 reveal">
+                <div class="flex items-center justify-between">
+                  <div class="font-semibold text-slate-900">Feels like Explorer</div>
+                  <span class="iconify text-xl brand" data-icon="mdi:folder-outline"></span>
+                </div>
+                <div class="mt-2">Navigate your folders with a UI that stays out of your way.</div>
+              </div>
+              <div class="card p-4 reveal">
+                <div class="flex items-center justify-between">
+                  <div class="font-semibold text-slate-900">Share links</div>
+                  <span class="iconify text-xl brand" data-icon="mdi:link-variant"></span>
+                </div>
+                <div class="mt-2">Create controlled, expiring links with a single click.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="reveal">
+            <div class="card soft-shadow p-6 relative overflow-hidden">
+              <div class="absolute -top-20 -right-24 w-72 h-72 rounded-full bg-slate-900/5"></div>
+              <div class="absolute -bottom-24 -left-20 w-80 h-80 rounded-full bg-slate-900/5"></div>
+
+              <div class="relative">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Interactive preview</div>
+                    <div class="mt-2 text-lg font-semibold text-slate-900">A vault you can understand at a glance</div>
+                  </div>
+                  <div class="flex items-center gap-1 text-slate-400">
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>
+                  </div>
+                </div>
+
+                <div class="mt-5 grid gap-3">
+                  <div class="card p-4 border-slate-200 bg-slate-50 shimmer">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-white border border-slate-200">
+                          <span class="iconify text-xl brand" data-icon="mdi:folder-open-outline"></span>
+                        </span>
+                        <div>
+                          <div class="font-semibold text-slate-900">Documents</div>
+                          <div class="text-xs text-slate-500">Pinned • 12 items</div>
+                        </div>
+                      </div>
+                      <div class="text-xs text-slate-500">Double-click to open</div>
+                    </div>
+                  </div>
+
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <div class="card p-4">
+                      <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200">
+                          <span class="iconify text-xl brand" data-icon="mdi:upload"></span>
+                        </span>
+                        <div>
+                          <div class="font-semibold text-slate-900">Upload</div>
+                          <div class="text-xs text-slate-500">Drop files to store</div>
+                        </div>
+                      </div>
+                      <div class="mt-3 text-sm text-slate-600">
+                        Supports large files with sensible limits and clear feedback.
+                      </div>
+                    </div>
+
+                    <div class="card p-4">
+                      <div class="flex items-center gap-3">
+                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-2xl bg-slate-50 border border-slate-200">
+                          <span class="iconify text-xl brand" data-icon="mdi:shield-check-outline"></span>
+                        </span>
+                        <div>
+                          <div class="font-semibold text-slate-900">Control</div>
+                          <div class="text-xs text-slate-500">Your vault, your rules</div>
+                        </div>
+                      </div>
+                      <div class="mt-3 text-sm text-slate-600">
+                        Manage shares, expirations, and visibility in one place.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="card p-4 border-slate-200">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span class="kbd text-xs font-semibold text-slate-700">Ctrl</span>
+                        <span class="text-slate-500">+</span>
+                        <span class="kbd text-xs font-semibold text-slate-700">K</span>
+                        <span class="text-sm text-slate-600 ml-2">Search instantly</span>
+                      </div>
+                      <span class="text-xs text-slate-500">(coming soon)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between text-xs text-slate-500">
+              <div class="flex items-center gap-2">
+                <span class="iconify" data-icon="mdi:lock-outline"></span>
+                <span>Built for local networks and controlled access</span>
+              </div>
+              <a class="hover:underline" href="#contact">Need a demo?</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="overview" class="mx-auto max-w-6xl px-5 py-12">
+        <div class="grid lg:grid-cols-12 gap-8 items-start">
+          <div class="lg:col-span-5 reveal">
+            <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Overview</div>
+            <h2 class="mt-3 text-3xl font-semibold text-slate-900">Why MewDrive exists</h2>
+            <p class="mt-3 text-slate-600 leading-relaxed">
+              We built MewDrive to remove friction from everyday file movement in classrooms, labs, and local teams.
+              Instead of hunting for pendrives or juggling multiple cloud accounts, you get a single, controlled vault in your LAN.
+            </p>
+          </div>
+
+          <div class="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+            <div class="card p-5 reveal">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-semibold text-slate-900">Centralized</div>
+                  <div class="mt-2 text-sm text-slate-600">Keep documents organized in one familiar place.</div>
+                </div>
+                <span class="iconify text-2xl brand" data-icon="mdi:server-network"></span>
+              </div>
+            </div>
+            <div class="card p-5 reveal">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-semibold text-slate-900">Seamless sharing</div>
+                  <div class="mt-2 text-sm text-slate-600">Generate expiring links for files or folders, instantly.</div>
+                </div>
+                <span class="iconify text-2xl brand" data-icon="mdi:share-variant-outline"></span>
+              </div>
+            </div>
+            <div class="card p-5 reveal">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-semibold text-slate-900">No extra devices</div>
+                  <div class="mt-2 text-sm text-slate-600">Works without pendrives or additional storage hardware.</div>
+                </div>
+                <span class="iconify text-2xl brand" data-icon="mdi:usb-flash-drive-outline"></span>
+              </div>
+            </div>
+            <div class="card p-5 reveal">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <div class="font-semibold text-slate-900">Explorer-like UI</div>
+                  <div class="mt-2 text-sm text-slate-600">Navigate, upload, rename, and manage like Windows Explorer.</div>
+                </div>
+                <span class="iconify text-2xl brand" data-icon="mdi:monitor-dashboard"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="achievements" class="mx-auto max-w-6xl px-5 pb-12">
+        <div class="card p-6 sm:p-8 soft-shadow reveal">
+          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-5">
+            <div>
+              <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Achievements</div>
+              <h2 class="mt-2 text-3xl font-semibold text-slate-900">Built with student precision</h2>
+              <p class="mt-3 text-slate-600">A launch that focuses on usability, reliability, and control inside a local network.</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-slate-500">
+              <span class="iconify" data-icon="mdi:check-decagram"></span>
+              <span>Transparent and iterated by community feedback</span>
+            </div>
+          </div>
+
+          <div class="mt-7 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="card p-5 border-slate-200 bg-slate-50 reveal">
+              <div class="text-xs text-slate-500">Core workflows</div>
+              <div class="mt-2 text-3xl font-semibold text-slate-900" data-counter data-target="6">0</div>
+              <div class="mt-1 text-sm text-slate-600">Upload, browse, search, share, revoke, manage</div>
+            </div>
+            <div class="card p-5 border-slate-200 bg-slate-50 reveal">
+              <div class="text-xs text-slate-500">Share speed</div>
+              <div class="mt-2 text-3xl font-semibold text-slate-900" data-counter data-target="3">0</div>
+              <div class="mt-1 text-sm text-slate-600">Clicks from file to shareable link</div>
+            </div>
+            <div class="card p-5 border-slate-200 bg-slate-50 reveal">
+              <div class="text-xs text-slate-500">UI clarity</div>
+              <div class="mt-2 text-3xl font-semibold text-slate-900" data-counter data-target="95">0</div>
+              <div class="mt-1 text-sm text-slate-600">Design consistency score (internal checklist)</div>
+            </div>
+            <div class="card p-5 border-slate-200 bg-slate-50 reveal">
+              <div class="text-xs text-slate-500">Local-first</div>
+              <div class="mt-2 text-3xl font-semibold text-slate-900">LAN</div>
+              <div class="mt-1 text-sm text-slate-600">Designed for controlled environments</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="mx-auto max-w-6xl px-5 py-12">
+        <div class="flex items-end justify-between gap-6 reveal">
+          <div>
+            <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Our platform features</div>
+            <h2 class="mt-2 text-3xl font-semibold text-slate-900">Detail-oriented, day-to-day useful</h2>
+            <p class="mt-3 text-slate-600 max-w-2xl">Everything you need for smooth navigation and controlled sharing—without the noise.</p>
+          </div>
+          <a class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-800 hover:bg-slate-50" href="{{ url_for('login') }}">
+            <span class="iconify" data-icon="mdi:arrow-right"></span>
+            <span>Open app</span>
+          </a>
+        </div>
+
+        <div class="mt-7 grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="card p-5 reveal">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold text-slate-900">Explorer navigation</div>
+              <span class="iconify text-2xl brand" data-icon="mdi:folder-multiple-outline"></span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Tiles + details views with context actions that feel familiar.</p>
+          </div>
+          <div class="card p-5 reveal">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold text-slate-900">Instant share links</div>
+              <span class="iconify text-2xl brand" data-icon="mdi:link-lock"></span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Create and copy links quickly, with expiration support for control.</p>
+          </div>
+          <div class="card p-5 reveal">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold text-slate-900">Shared landing pages</div>
+              <span class="iconify text-2xl brand" data-icon="mdi:page-layout-body"></span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Recipients get a clean, styled page to download files or browse folders.</p>
+          </div>
+          <div class="card p-5 reveal">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold text-slate-900">Bookmarks</div>
+              <span class="iconify text-2xl brand" data-icon="mdi:bookmark-outline"></span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Pin quick-access folders for faster navigation.</p>
+          </div>
+          <div class="card p-5 reveal">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold text-slate-900">Consistent theming</div>
+              <span class="iconify text-2xl brand" data-icon="mdi:palette-outline"></span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Minimal, neutral design based on the brand black for clarity.</p>
+          </div>
+          <div class="card p-5 reveal">
+            <div class="flex items-center justify-between">
+              <div class="font-semibold text-slate-900">Local-first mindset</div>
+              <span class="iconify text-2xl brand" data-icon="mdi:lan-connect"></span>
+            </div>
+            <p class="mt-3 text-sm text-slate-600">Optimized for local networks, labs, and controlled environments.</p>
+          </div>
+        </div>
+
+        <div class="mt-8 grid lg:grid-cols-2 gap-4">
+          <div class="card p-6 reveal">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Workflow</div>
+                <div class="mt-2 text-xl font-semibold text-slate-900">From device to device — without extra storage</div>
+                <p class="mt-3 text-sm text-slate-600">Upload once, share as needed, revoke anytime. A simple loop for local collaboration.</p>
+              </div>
+              <span class="iconify text-3xl brand" data-icon="mdi:infinity"></span>
+            </div>
+            <div class="mt-5 grid gap-3 text-sm">
+              <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3">
+                <span class="text-slate-700 font-semibold">Upload</span>
+                <span class="text-slate-500">drop or select files</span>
+              </div>
+              <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3">
+                <span class="text-slate-700 font-semibold">Organize</span>
+                <span class="text-slate-500">folders + bookmarks</span>
+              </div>
+              <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3">
+                <span class="text-slate-700 font-semibold">Share</span>
+                <span class="text-slate-500">link with expiration</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card p-6 reveal">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs uppercase tracking-[0.22em] text-slate-500">FAQ</div>
+                <div class="mt-2 text-xl font-semibold text-slate-900">Quick answers</div>
+                <p class="mt-3 text-sm text-slate-600">Tap a question to expand.</p>
+              </div>
+              <span class="iconify text-3xl brand" data-icon="mdi:help-circle-outline"></span>
+            </div>
+
+            <div class="mt-5 space-y-3" id="faq">
+              <button class="w-full text-left card p-4 hover:bg-slate-50 transition" type="button" data-accordion>
+                <div class="flex items-center justify-between gap-4">
+                  <div class="font-semibold text-slate-900">Does it need internet?</div>
+                  <span class="iconify text-xl text-slate-400" data-icon="mdi:chevron-down"></span>
+                </div>
+                <div class="mt-2 text-sm text-slate-600 hidden" data-accordion-panel>
+                  MewDrive is designed for local networks. Internet is not required for basic usage.
+                </div>
+              </button>
+              <button class="w-full text-left card p-4 hover:bg-slate-50 transition" type="button" data-accordion>
+                <div class="flex items-center justify-between gap-4">
+                  <div class="font-semibold text-slate-900">Can I control shared access?</div>
+                  <span class="iconify text-xl text-slate-400" data-icon="mdi:chevron-down"></span>
+                </div>
+                <div class="mt-2 text-sm text-slate-600 hidden" data-accordion-panel>
+                  Yes. Shares are link-based and can be configured to expire and revoked from the shared links page.
+                </div>
+              </button>
+              <button class="w-full text-left card p-4 hover:bg-slate-50 transition" type="button" data-accordion>
+                <div class="flex items-center justify-between gap-4">
+                  <div class="font-semibold text-slate-900">Who is building this?</div>
+                  <span class="iconify text-xl text-slate-400" data-icon="mdi:chevron-down"></span>
+                </div>
+                <div class="mt-2 text-sm text-slate-600 hidden" data-accordion-panel>
+                  Team Paradox — a tech community of students focused on practical, usable tools.
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="community" class="mx-auto max-w-6xl px-5 py-12">
+        <div class="grid lg:grid-cols-12 gap-8">
+          <div class="lg:col-span-5 reveal">
+            <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Tech community</div>
+            <h2 class="mt-2 text-3xl font-semibold text-slate-900">Team Paradox</h2>
+            <p class="mt-3 text-slate-600 leading-relaxed">
+              We’re students driven to build tools that feel polished, intentional, and genuinely helpful.
+              MewDrive is our launch into local-first productivity—crafted with a focus on real workflows.
+            </p>
+
+            <div class="mt-6 card p-5 reveal">
+              <div class="flex items-start gap-4">
+                <span class="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-slate-50 border border-slate-200">
+                  <span class="iconify text-2xl brand" data-icon="mdi:account-group-outline"></span>
+                </span>
+                <div>
+                  <div class="font-semibold text-slate-900">Community-driven</div>
+                  <div class="mt-1 text-sm text-slate-600">We iterate quickly from feedback and keep the UX approachable.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+            <div class="card p-6 reveal">
+              <div class="flex items-center justify-between">
+                <div class="font-semibold text-slate-900">Design craft</div>
+                <span class="iconify text-2xl brand" data-icon="mdi:vector-square"></span>
+              </div>
+              <p class="mt-3 text-sm text-slate-600">Micro-interactions, consistent typography, and clean spacing.</p>
+            </div>
+            <div class="card p-6 reveal">
+              <div class="flex items-center justify-between">
+                <div class="font-semibold text-slate-900">Engineering focus</div>
+                <span class="iconify text-2xl brand" data-icon="mdi:cog-outline"></span>
+              </div>
+              <p class="mt-3 text-sm text-slate-600">A solid base that can evolve into more advanced LAN features.</p>
+            </div>
+            <div class="card p-6 reveal">
+              <div class="flex items-center justify-between">
+                <div class="font-semibold text-slate-900">Local-first</div>
+                <span class="iconify text-2xl brand" data-icon="mdi:map-marker-radius-outline"></span>
+              </div>
+              <p class="mt-3 text-sm text-slate-600">Prioritizing privacy and control in controlled networks.</p>
+            </div>
+            <div class="card p-6 reveal">
+              <div class="flex items-center justify-between">
+                <div class="font-semibold text-slate-900">Student energy</div>
+                <span class="iconify text-2xl brand" data-icon="mdi:school-outline"></span>
+              </div>
+              <p class="mt-3 text-sm text-slate-600">Built by learners who care about real users, not just demos.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" class="mx-auto max-w-6xl px-5 py-12">
+        <div class="card p-6 sm:p-8 soft-shadow reveal">
+          <div class="grid lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-5">
+              <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Get in touch</div>
+              <h2 class="mt-2 text-3xl font-semibold text-slate-900">Let’s launch this together</h2>
+              <p class="mt-3 text-slate-600 leading-relaxed">
+                Want a demo in your lab, school, or team? Send us a message.
+                We’ll help you set up a clean, controlled workflow for file sharing over LAN.
+              </p>
+
+              <div class="mt-6 space-y-3 text-sm">
+                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3">
+                  <div class="flex items-center gap-2 text-slate-700 font-semibold">
+                    <span class="iconify brand" data-icon="mdi:email-outline"></span>
+                    <span>Email</span>
+                  </div>
+                  <button class="text-slate-600 hover:text-slate-900 font-semibold" type="button" data-copy="aditya463615@gmail.com">Copy</button>
+                </div>
+                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3">
+                  <div class="flex items-center gap-2 text-slate-700 font-semibold">
+                    <span class="iconify brand" data-icon="mdi:link-variant"></span>
+                    <span>Share</span>
+                  </div>
+                  <button class="text-slate-600 hover:text-slate-900 font-semibold" type="button" data-copy="{{ request.url_root }}">Copy</button>
+                </div>
+              </div>
+
+              <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                <a class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl brand-bg text-white font-semibold hover:bg-[#0b0d10] transition brand-ring" href="{{ url_for('signup') }}">
+                  <span class="iconify" data-icon="mdi:rocket-launch"></span>
+                  <span>Start now</span>
+                </a>
+                <a class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl border border-slate-200 bg-white font-semibold text-slate-800 hover:bg-slate-50 transition" href="mailto:aditya463615@gmail.com?subject=MewDrive%20Demo%20Request">
+                  <span class="iconify" data-icon="mdi:send-outline"></span>
+                  <span>Email Team Paradox</span>
+                </a>
+              </div>
+
+              <div class="mt-4 text-xs text-slate-500">Contact: aditya463615@gmail.com</div>
+            </div>
+
+            <div class="lg:col-span-7">
+              <div class="card p-6 reveal">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <div class="text-xs uppercase tracking-[0.22em] text-slate-500">Message</div>
+                    <div class="mt-2 text-lg font-semibold text-slate-900">What do you want to build with MewDrive?</div>
+                  </div>
+                  <span class="iconify text-3xl brand" data-icon="mdi:message-text-outline"></span>
+                </div>
+
+                <form class="mt-5 grid gap-3" onsubmit="return false;">
+                  <div class="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Name</label>
+                      <input class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-[#101216]/10 focus:border-[#101216]" placeholder="Your name" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Organization</label>
+                      <input class="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-[#101216]/10 focus:border-[#101216]" placeholder="School / Lab / Team" />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">Message</label>
+                    <textarea class="w-full min-h-[140px] border border-slate-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-[#101216]/10 focus:border-[#101216]" placeholder="Tell us what you need — sharing, access control, device workflow, etc."></textarea>
+                  </div>
+                  <button class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl brand-bg text-white font-semibold hover:bg-[#0b0d10] transition brand-ring" type="button" id="contact-cta">
+                    <span class="iconify" data-icon="mdi:send"></span>
+                    <span>Copy message & open email</span>
+                  </button>
+                  <div class="text-xs text-slate-500">This form opens your email client (no backend storage).</div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="mx-auto max-w-6xl px-5 pb-10">
+        <div class="border-t border-slate-200 pt-8">
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div class="flex items-center gap-3">
+              <img class="w-10 h-10 rounded-2xl object-cover border border-slate-200" src="{{ url_for('static', filename='logo/logo.png') }}" alt="MewDrive logo" />
+              <div>
+                <div class="font-semibold text-slate-900">MewDrive</div>
+                <div class="text-xs text-slate-500">Launching by Team Paradox • Local-first file sharing</div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#overview">Overview</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#features">Features</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="#contact">Contact</a>
+              <a class="px-3 py-2 rounded-xl hover:bg-slate-100" href="{{ url_for('login') }}">Login</a>
+            </div>
+          </div>
+
+          <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-xs text-slate-500">
+            <div>&copy; {{ current_year }} Team Paradox. All rights reserved.</div>
+            <div class="flex items-center gap-2">
+              <span class="iconify" data-icon="mdi:shield-outline"></span>
+              <span>Designed for controlled local networks</span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+
+    <script>
+      (function(){
+        var menuBtn = document.getElementById('mobile-menu-btn');
+        var menu = document.getElementById('mobile-menu');
+        if(menuBtn && menu){
+          menuBtn.addEventListener('click', function(){
+            menu.classList.toggle('hidden');
+          });
+          menu.querySelectorAll('a').forEach(function(a){
+            a.addEventListener('click', function(){ menu.classList.add('hidden'); });
+          });
+        }
+
+        function copyText(text){
+          if(text == null) return;
+          var t = String(text);
+          if(navigator.clipboard && navigator.clipboard.writeText){
+            navigator.clipboard.writeText(t).catch(function(){});
+            return;
+          }
+          var ta = document.createElement('textarea');
+          ta.value = t;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try{ document.execCommand('copy'); }catch(e){}
+          document.body.removeChild(ta);
+        }
+
+        document.querySelectorAll('[data-copy]').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            var text = btn.getAttribute('data-copy');
+            copyText(text);
+            btn.textContent = 'Copied';
+            setTimeout(function(){ btn.textContent = 'Copy'; }, 1200);
+          });
+        });
+
+        var revealEls = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+        if('IntersectionObserver' in window){
+          var io = new IntersectionObserver(function(entries){
+            entries.forEach(function(e){
+              if(e.isIntersecting){
+                e.target.classList.add('is-visible');
+                io.unobserve(e.target);
+              }
+            });
+          }, { threshold: 0.12 });
+          revealEls.forEach(function(el){ io.observe(el); });
+        }else{
+          revealEls.forEach(function(el){ el.classList.add('is-visible'); });
+        }
+
+        function animateCounter(el){
+          var target = parseInt(el.getAttribute('data-target') || '0', 10);
+          if(!target) return;
+          var start = 0;
+          var duration = 900;
+          var startTs = null;
+          function step(ts){
+            if(startTs == null) startTs = ts;
+            var p = Math.min(1, (ts - startTs) / duration);
+            var eased = 1 - Math.pow(1 - p, 3);
+            var val = Math.round(start + (target - start) * eased);
+            el.textContent = String(val);
+            if(p < 1) requestAnimationFrame(step);
+          }
+          requestAnimationFrame(step);
+        }
+
+        var counters = Array.prototype.slice.call(document.querySelectorAll('[data-counter]'));
+        if(counters.length && 'IntersectionObserver' in window){
+          var cIO = new IntersectionObserver(function(entries){
+            entries.forEach(function(e){
+              if(e.isIntersecting){
+                animateCounter(e.target);
+                cIO.unobserve(e.target);
+              }
+            });
+          }, { threshold: 0.5 });
+          counters.forEach(function(el){ cIO.observe(el); });
+        }else{
+          counters.forEach(function(el){ animateCounter(el); });
+        }
+
+        document.querySelectorAll('[data-accordion]').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            var panel = btn.querySelector('[data-accordion-panel]');
+            if(!panel) return;
+            var isOpen = !panel.classList.contains('hidden');
+            document.querySelectorAll('[data-accordion-panel]').forEach(function(p){ p.classList.add('hidden'); });
+            if(isOpen){
+              panel.classList.add('hidden');
+            }else{
+              panel.classList.remove('hidden');
+            }
+          });
+        });
+
+        var contactCta = document.getElementById('contact-cta');
+        if(contactCta){
+          contactCta.addEventListener('click', function(){
+            var inputs = contactCta.closest('form');
+            if(!inputs) return;
+            var name = inputs.querySelector('input[placeholder="Your name"]');
+            var org = inputs.querySelector('input[placeholder="School / Lab / Team"]');
+            var msg = inputs.querySelector('textarea');
+            var composed = '';
+            composed += 'Name: ' + (name ? (name.value || '') : '') + '\n';
+            composed += 'Organization: ' + (org ? (org.value || '') : '') + '\n\n';
+            composed += (msg ? (msg.value || '') : '');
+            copyText(composed);
+            var subject = encodeURIComponent('MewDrive — Demo / Collaboration');
+            var body = encodeURIComponent(composed);
+            window.location.href = 'mailto:aditya463615@gmail.com?subject=' + subject + '&body=' + body;
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>

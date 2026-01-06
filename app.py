@@ -134,7 +134,7 @@ def create_app():
             if current_user.is_admin:
                 return redirect(url_for("admin_dashboard"))
             return redirect(url_for("dashboard"))
-        return redirect(url_for("login"))
+        return render_template("landing.html", current_year=datetime.utcnow().year)
 
     @app.get("/signup")
     def signup():
