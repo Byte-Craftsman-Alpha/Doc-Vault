@@ -21,6 +21,102 @@ DEFAULT_FOLDERS = ["Documents", "Pictures", "Videos"]
 ROOT_FOLDER_NAME = "__root__"
 
 
+def _parse_size_to_bytes(value: str | None) -> int | None:
+    if value is None:
+        return None
+    s = str(value).strip()
+    if not s:
+        return None
+    if s.isdigit():
+        return int(s)
+    s_up = s.upper().replace(" ", "")
+    mult = 1
+    if s_up.endswith("KB"):
+        mult = 1024
+        s_up = s_up[:-2]
+    elif s_up.endswith("MB"):
+        mult = 1024**2
+        s_up = s_up[:-2]
+    elif s_up.endswith("GB"):
+        mult = 1024**3
+        s_up = s_up[:-2]
+    elif s_up.endswith("TB"):
+        mult = 1024**4
+        s_up = s_up[:-2]
+    try:
+        return int(float(s_up) * mult)
+    except ValueError:
+        return None
+
+
+def _format_bytes(n: int) -> str:
+    v = float(max(0, int(n or 0)))
+    units = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    while v >= 1024.0 and i < len(units) - 1:
+        v /= 1024.0
+        i += 1
+    if i == 0:
+        return f"{int(v)} {units[i]}"
+    return f"{v:.1f} {units[i]}"
+
+
+def _get_user_used_bytes(user_id: int) -> int:
+    v = db.session.query(db.func.coalesce(db.func.sum(VaultFile.size_bytes), 0)).filter(VaultFile.user_id == user_id).scalar()
+    return int(v or 0)
+
+
+def _get_server_used_bytes() -> int:
+    v = db.session.query(db.func.coalesce(db.func.sum(VaultFile.size_bytes), 0)).scalar()
+    return int(v or 0)
+
+
+def _can_store_bytes(app: Flask, user_id: int, add_bytes: int) -> tuple[bool, str | None]:
+    add = int(add_bytes or 0)
+    if add < 0:
+        add = 0
+    user_limit = int(app.config.get("USER_STORAGE_LIMIT_BYTES") or 0)
+    server_limit = int(app.config.get("SERVER_STORAGE_LIMIT_BYTES") or 0)
+
+    if user_limit > 0:
+        used = _get_user_used_bytes(user_id)
+        if used + add > user_limit:
+            return False, f"User storage limit exceeded. Used {_format_bytes(used)} of {_format_bytes(user_limit)}."
+
+    if server_limit > 0:
+        used = _get_server_used_bytes()
+        if used + add > server_limit:
+            return False, f"Server storage limit exceeded. Used {_format_bytes(used)} of {_format_bytes(server_limit)}."
+
+    return True, None
+
+
+def _load_dotenv_if_present() -> None:
+    env_path = os.environ.get("ENV_FILE") or os.path.join(os.path.dirname(__file__), ".env")
+    try:
+        if not os.path.exists(env_path):
+            return
+    except OSError:
+        return
+
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for raw in f:
+                line = raw.strip()
+                if not line or line.startswith("#"):
+                    continue
+                if "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k = k.strip()
+                v = v.strip().strip('"').strip("'")
+                if not k:
+                    continue
+                os.environ.setdefault(k, v)
+    except OSError:
+        return
+
+
 def file_disk_path(upload_root: str, user_id: int, folder_id: int, stored_filename: str) -> str:
     return os.path.join(upload_root, str(user_id), str(folder_id), stored_filename)
 
@@ -84,6 +180,7 @@ def admin_required(view_fn):
 
 
 def create_app():
+    _load_dotenv_if_present()
     app = Flask(__name__, instance_relative_config=True)
     os.makedirs(app.instance_path, exist_ok=True)
 
@@ -95,6 +192,8 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         MAX_CONTENT_LENGTH=int(os.environ.get("MAX_CONTENT_LENGTH", str(200 * 1024 * 1024))),
         UPLOAD_ROOT=os.environ.get("UPLOAD_ROOT", os.path.join(app.instance_path, "uploads")),
+        SERVER_STORAGE_LIMIT_BYTES=_parse_size_to_bytes(os.environ.get("SERVER_STORAGE_LIMIT_BYTES")) or 0,
+        USER_STORAGE_LIMIT_BYTES=_parse_size_to_bytes(os.environ.get("USER_STORAGE_LIMIT_BYTES")) or 0,
     )
 
     db.init_app(app)
@@ -117,7 +216,40 @@ def create_app():
                 .order_by(Folder.name.asc())
                 .all()
             )
-            return {"sidebar_folders": pinned_folders, "all_folders": all_folders}
+            user_used = _get_user_used_bytes(current_user.id)
+            user_limit = int(app.config.get("USER_STORAGE_LIMIT_BYTES") or 0)
+            server_used = _get_server_used_bytes()
+            server_limit = int(app.config.get("SERVER_STORAGE_LIMIT_BYTES") or 0)
+
+            user_free = 0
+            if user_limit > 0:
+                user_free = max(0, user_limit - user_used)
+            server_free = 0
+            if server_limit > 0:
+                server_free = max(0, server_limit - server_used)
+
+            user_pct = 0
+            if user_limit > 0:
+                user_pct_float = (user_used / user_limit) * 100
+                user_pct = int(min(100, max(0, round(user_pct_float))))
+            server_pct = 0
+            if server_limit > 0:
+                server_pct_float = (server_used / server_limit) * 100
+                server_pct = int(min(100, max(0, round(server_pct_float))))
+
+            return {
+                "sidebar_folders": pinned_folders,
+                "all_folders": all_folders,
+                "storage_user_used_bytes": user_used,
+                "storage_user_limit_bytes": user_limit,
+                "storage_user_free_bytes": user_free,
+                "storage_user_pct": user_pct,
+                "storage_server_used_bytes": server_used,
+                "storage_server_limit_bytes": server_limit,
+                "storage_server_free_bytes": server_free,
+                "storage_server_pct": server_pct,
+                "format_bytes": _format_bytes,
+            }
         return {"sidebar_folders": [], "all_folders": []}
 
     @app.get("/logo.png")
@@ -770,6 +902,20 @@ def create_app():
                 return jsonify({"ok": False, "error": "No file selected."}), 400
             return redirect(url_for("dashboard"))
 
+        size_hint = 0
+        try:
+            size_hint = int(getattr(f, "content_length", 0) or 0)
+        except (TypeError, ValueError):
+            size_hint = 0
+
+        if size_hint > 0:
+            ok, err = _can_store_bytes(app, current_user.id, size_hint)
+            if not ok:
+                flash(err or "Storage limit exceeded.", "error")
+                if wants_json(request):
+                    return jsonify({"ok": False, "error": err or "Storage limit exceeded."}), 413
+                return redirect(url_for("dashboard"))
+
         original = f.filename
         safe_name = secure_filename(original)
         stored = f"{uuid.uuid4().hex}__{safe_name or 'file'}"
@@ -785,6 +931,18 @@ def create_app():
             size_bytes = os.path.getsize(target_path)
         except OSError:
             size_bytes = 0
+
+        ok2, err2 = _can_store_bytes(app, current_user.id, size_bytes)
+        if not ok2:
+            try:
+                if os.path.exists(target_path):
+                    os.remove(target_path)
+            except OSError:
+                pass
+            flash(err2 or "Storage limit exceeded.", "error")
+            if wants_json(request):
+                return jsonify({"ok": False, "error": err2 or "Storage limit exceeded."}), 413
+            return redirect(url_for("dashboard"))
 
         record = VaultFile(
             user_id=current_user.id,
@@ -860,6 +1018,20 @@ def create_app():
                 return jsonify({"ok": False, "error": "No file selected."}), 400
             return redirect(url_for("folder_view", folder_id=folder.id))
 
+        size_hint = 0
+        try:
+            size_hint = int(getattr(f, "content_length", 0) or 0)
+        except (TypeError, ValueError):
+            size_hint = 0
+
+        if size_hint > 0:
+            ok, err = _can_store_bytes(app, current_user.id, size_hint)
+            if not ok:
+                flash(err or "Storage limit exceeded.", "error")
+                if wants_json(request):
+                    return jsonify({"ok": False, "error": err or "Storage limit exceeded."}), 413
+                return redirect(url_for("folder_view", folder_id=folder.id))
+
         original = f.filename
         safe_name = secure_filename(original)
         stored = f"{uuid.uuid4().hex}__{safe_name or 'file'}"
@@ -875,6 +1047,18 @@ def create_app():
             size_bytes = os.path.getsize(target_path)
         except OSError:
             size_bytes = 0
+
+        ok2, err2 = _can_store_bytes(app, current_user.id, size_bytes)
+        if not ok2:
+            try:
+                if os.path.exists(target_path):
+                    os.remove(target_path)
+            except OSError:
+                pass
+            flash(err2 or "Storage limit exceeded.", "error")
+            if wants_json(request):
+                return jsonify({"ok": False, "error": err2 or "Storage limit exceeded."}), 413
+            return redirect(url_for("folder_view", folder_id=folder.id))
 
         record = VaultFile(
             user_id=current_user.id,

@@ -54,13 +54,27 @@
       </div>
 
       <div class="relative">
-        <button class="minimal-btn minimal-btn-primary" type="button" onclick="toggleExplorerNewMenu()">
+        <button class="minimal-btn minimal-btn-primary hidden md:inline-flex" type="button" onclick="toggleExplorerNewMenu()">
           <span class="iconify" data-icon="mdi:plus"></span>
           <span>New</span>
         </button>
 
+        <div id="explorer-new-backdrop" class="hidden fixed inset-0 z-[115] bg-slate-900/30 md:hidden"></div>
         <div id="explorer-new-menu" class="hidden absolute right-0 mt-2 w-96 z-10">
-          <div class="minimal-card p-4">
+          <div class="minimal-card p-4" id="explorer-new-panel">
+            <div class="md:hidden">
+              <div class="mx-auto h-1.5 w-10 rounded-full bg-slate-300"></div>
+              <div class="mt-3 flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="font-semibold text-slate-900 truncate">New</div>
+                  <div class="text-xs text-slate-500 mt-1">Create or upload into the current folder</div>
+                </div>
+                <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" id="explorer-new-close" title="Close">
+                  <span class="iconify" data-icon="mdi:close"></span>
+                </button>
+              </div>
+            </div>
+
             <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">New folder</div>
             <form class="flex gap-3 ajax-form" method="post" action="{{ url_for('create_folder') }}" data-ajax="json">
               <input type="hidden" name="parent_id" id="new-folder-parent-id" value="{{ selected_folder_id or root_folder_id or '' }}" />
@@ -140,7 +154,7 @@
                 <span class="iconify" data-icon="mdi:folder-outline"></span>
               </div>
               <div class="min-w-0">
-                <div class="font-semibold text-slate-900 truncate" data-folder-title>{{ folder.name }}</div>
+                <div class="font-semibold text-slate-900 break-all whitespace-normal leading-snug" data-folder-title>{{ folder.name }}</div>
                 <div class="text-xs text-slate-500" data-folder-subtitle>Created {{ folder.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
               </div>
             </a>
@@ -176,15 +190,15 @@
       </div>
 
       <div id="explorer-folders-tiles" class="hidden p-4">
-        <div id="folder-tiles" class="grid gap-3" data-tiles>
+        <div id="folder-tiles" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" data-tiles>
           {% for folder in folders %}
             <a class="minimal-card p-3 hover:bg-slate-50 transition-none" href="{{ url_for('folder_view', folder_id=folder.id) }}" data-folder-tile="{{ folder.id }}" data-folder-name="{{ folder.name }}" data-selectable="folder" data-open-url="{{ url_for('folder_view', folder_id=folder.id) }}">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center" data-folder-tile-icon>
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center">
                   <span class="iconify" data-icon="mdi:folder-outline"></span>
                 </div>
                 <div class="min-w-0">
-                  <div class="text-slate-900 font-semibold truncate">{{ folder.name }}</div>
+                  <div class="font-semibold text-slate-900 break-words whitespace-normal leading-snug" data-folder-tile-title>{{ folder.name }}</div>
                   <div class="text-xs text-slate-500 truncate">Folder</div>
                 </div>
               </div>
@@ -210,7 +224,7 @@
           <tbody id="root-files-table-body">
             {% for f in files %}
               <tr class="hover:bg-slate-50" data-file-row="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
-                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900" data-file-name>{{ f.original_filename }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900 break-all whitespace-normal leading-snug" data-file-name>{{ f.original_filename }}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="type">{{ f.content_type or '-' }}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600" data-file-col="size">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="modified">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
@@ -262,16 +276,16 @@
       </div>
 
       <div id="explorer-root-files-tiles" class="hidden p-4">
-        <div id="root-files-tiles" class="grid gap-3" data-tiles>
+        <div id="root-files-tiles" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" data-tiles>
           {% for f in files %}
             <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-size-bytes="{{ f.size_bytes or 0 }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
               <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 min-w-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
                   <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>
                     <span class="iconify" data-icon="mdi:file-outline"></span>
                   </div>
                   <div class="min-w-0">
-                    <div class="font-semibold text-slate-900 truncate" data-file-name>{{ f.original_filename }}</div>
+                    <div class="font-semibold text-slate-900 break-all whitespace-normal leading-snug max-w-full" data-file-name>{{ f.original_filename }}</div>
                     <div class="text-xs text-slate-500 truncate">{{ (f.content_type or '-') }} • {{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
                   </div>
                 </div>
@@ -328,7 +342,7 @@
           <tbody id="folder-files-table-body">
             {% for f in files %}
               <tr class="hover:bg-slate-50" data-file-row="{{ f.id }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
-                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900" data-file-name>{{ f.original_filename }}</td>
+                <td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900 break-all whitespace-normal leading-snug" data-file-name>{{ f.original_filename }}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="type">{{ f.content_type or '-' }}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600" data-file-col="size">{% if f.size_bytes %}{{ (f.size_bytes / 1024) | round(1) }} KB{% else %}-{% endif %}</td>
                 <td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="modified">{{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
@@ -380,16 +394,16 @@
       </div>
 
       <div id="explorer-folder-files-tiles" class="hidden p-4">
-        <div id="folder-files-tiles" class="grid gap-3" data-tiles>
+        <div id="folder-files-tiles" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" data-tiles>
           {% for f in files %}
             <div class="minimal-card p-3" data-file-tile="{{ f.id }}" data-size-bytes="{{ f.size_bytes or 0 }}" data-selectable="file" data-open-url="{{ url_for('download', file_id=f.id) }}">
               <div class="flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3 min-w-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
                   <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>
                     <span class="iconify" data-icon="mdi:file-outline"></span>
                   </div>
                   <div class="min-w-0">
-                    <div class="font-semibold text-slate-900 truncate" data-file-name>{{ f.original_filename }}</div>
+                    <div class="font-semibold text-slate-900 break-all whitespace-normal leading-snug max-w-full" data-file-name>{{ f.original_filename }}</div>
                     <div class="text-xs text-slate-500 truncate">{{ (f.content_type or '-') }} • {{ f.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</div>
                   </div>
                 </div>
@@ -435,9 +449,25 @@
       </div>
     </div>
 
+  <style>
+    @media (max-width: 767px){
+      #drop-confirm{align-items:flex-end;justify-content:center;padding:0}
+      #drop-confirm[data-open="1"]{transform:translateY(0)}
+      #drop-confirm{transform:translateY(110%);transition:transform .22s ease}
+      #drop-panel{border-radius:20px 20px 0 0;max-height:82vh;overflow:auto}
+
+      #explorer-new-menu{position:fixed;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:0;z-index:120;width:auto;margin:0;transform:translateY(110%);transition:transform .22s ease}
+      #explorer-new-menu[data-open="1"]{transform:translateY(0)}
+      #explorer-new-panel{border-radius:20px 20px 0 0;max-height:82vh;overflow:auto;width:100%}
+    }
+  </style>
+
   <div id="drop-overlay" class="hidden fixed inset-0 z-30 bg-slate-900/10"></div>
   <div id="drop-confirm" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6">
-    <div class="minimal-card w-full max-w-md p-5 shadow-lg">
+    <div id="drop-panel" class="minimal-card w-full max-w-md p-5 shadow-lg">
+      <div class="md:hidden">
+        <div class="mx-auto h-1.5 w-10 rounded-full bg-slate-300"></div>
+      </div>
       <div class="flex items-center justify-between">
         <div class="font-semibold text-slate-900" id="drop-destination">Upload</div>
         <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" id="drop-cancel-x" title="Close">
@@ -626,12 +656,115 @@
     function toggleExplorerNewMenu(){
       var el = document.getElementById('explorer-new-menu');
       if(!el) return;
+      var backdrop = document.getElementById('explorer-new-backdrop');
       var pid = document.getElementById('new-folder-parent-id');
       if(pid){
         pid.value = getCurrentFolderId();
       }
+
+      var isMobile = false;
+      try{ isMobile = window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ isMobile = false; }
+
+      if(isMobile){
+        var isOpen = el.getAttribute('data-open') === '1' && !el.classList.contains('hidden');
+        if(isOpen){
+          el.removeAttribute('data-open');
+          if(backdrop) backdrop.classList.add('hidden');
+          setTimeout(function(){
+            if(!el.getAttribute('data-open')) el.classList.add('hidden');
+          }, 240);
+        }else{
+          if(backdrop) backdrop.classList.remove('hidden');
+          el.classList.remove('hidden');
+          el.setAttribute('data-open', '1');
+        }
+        return;
+      }
+
       el.classList.toggle('hidden');
     }
+
+    (function(){
+      var backdrop = document.getElementById('explorer-new-backdrop');
+      var closeBtn = document.getElementById('explorer-new-close');
+      var panel = document.getElementById('explorer-new-panel');
+      var modal = document.getElementById('explorer-new-menu');
+      if(!panel || !modal) return;
+
+      function isMobileUI(){
+        try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+      }
+
+      function hide(){
+        if(!isMobileUI()) return;
+        modal.removeAttribute('data-open');
+        if(backdrop) backdrop.classList.add('hidden');
+        setTimeout(function(){
+          if(!modal.getAttribute('data-open')) modal.classList.add('hidden');
+        }, 240);
+      }
+
+      if(closeBtn) closeBtn.addEventListener('click', function(){ hide(); });
+      if(backdrop) backdrop.addEventListener('click', function(){ hide(); });
+
+      var startY = 0;
+      var curY = 0;
+      var dragging = false;
+      var allowDrag = false;
+
+      function setTranslate(y){
+        panel.style.transition = 'none';
+        panel.style.transform = 'translateY(' + y + 'px)';
+      }
+
+      function clearTranslate(){
+        panel.style.transition = '';
+        panel.style.transform = '';
+      }
+
+      function onTouchStart(ev){
+        if(!isMobileUI()) return;
+        if(modal.classList.contains('hidden')) return;
+        if(!ev.touches || !ev.touches.length) return;
+        if(panel.scrollTop && panel.scrollTop > 0) return;
+        dragging = true;
+        allowDrag = true;
+        startY = ev.touches[0].clientY;
+        curY = startY;
+        panel.style.willChange = 'transform';
+      }
+
+      function onTouchMove(ev){
+        if(!dragging) return;
+        if(!allowDrag) return;
+        if(!ev.touches || !ev.touches.length) return;
+        curY = ev.touches[0].clientY;
+        var dy = Math.max(0, curY - startY);
+        if(dy > 0){
+          try{ ev.preventDefault(); }catch(e){}
+          setTranslate(dy);
+        }
+      }
+
+      function onTouchEnd(){
+        if(!dragging) return;
+        dragging = false;
+        allowDrag = false;
+        panel.style.willChange = '';
+        var dy = Math.max(0, curY - startY);
+        if(dy > 70){
+          clearTranslate();
+          hide();
+          return;
+        }
+        clearTranslate();
+      }
+
+      panel.addEventListener('touchstart', onTouchStart, { passive: true });
+      panel.addEventListener('touchmove', onTouchMove, { passive: false });
+      panel.addEventListener('touchend', onTouchEnd);
+      panel.addEventListener('touchcancel', onTouchEnd);
+    })();
 
     function toggleExplorerViewMenu(){
       var el = document.getElementById('context-view-menu');
@@ -959,9 +1092,9 @@
 
       document.querySelectorAll('[data-tiles]').forEach(function(grid){
         if(mode === 'tiles_large'){
-          grid.className = 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3';
+          grid.className = 'grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
         }else{
-          grid.className = 'grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
+          grid.className = 'grid gap-3 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4';
         }
       });
 
@@ -1167,14 +1300,91 @@
       if(sizeEl) sizeEl.textContent = file ? formatBytes(file.size) : '';
       overlay.classList.remove('hidden');
       modal.classList.remove('hidden');
+      if(window.matchMedia && window.matchMedia('(max-width: 767px)').matches){
+        modal.setAttribute('data-open', '1');
+      }
     }
 
     function hideDropConfirm(){
       var modal = document.getElementById('drop-confirm');
       var overlay = document.getElementById('drop-overlay');
+      if(!modal){
+        if(overlay) overlay.classList.add('hidden');
+        return;
+      }
+      var isMobile = false;
+      try{ isMobile = window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ isMobile = false; }
+      if(isMobile){
+        modal.removeAttribute('data-open');
+        if(overlay) overlay.classList.add('hidden');
+        setTimeout(function(){
+          if(modal && !modal.getAttribute('data-open')) modal.classList.add('hidden');
+        }, 240);
+        return;
+      }
       if(overlay) overlay.classList.add('hidden');
-      if(modal) modal.classList.add('hidden');
+      modal.classList.add('hidden');
     }
+
+    (function(){
+      var modal = document.getElementById('drop-confirm');
+      var panel = document.getElementById('drop-panel');
+      if(!modal || !panel) return;
+
+      var startY = 0;
+      var curY = 0;
+      var dragging = false;
+
+      function setTranslate(y){
+        panel.style.transition = 'none';
+        panel.style.transform = 'translateY(' + y + 'px)';
+      }
+
+      function clearTranslate(){
+        panel.style.transition = '';
+        panel.style.transform = '';
+      }
+
+      function isMobileUI(){
+        try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+      }
+
+      function onTouchStart(ev){
+        if(!isMobileUI()) return;
+        if(!modal || modal.classList.contains('hidden')) return;
+        if(!ev.touches || !ev.touches.length) return;
+        dragging = true;
+        startY = ev.touches[0].clientY;
+        curY = startY;
+        panel.style.willChange = 'transform';
+      }
+
+      function onTouchMove(ev){
+        if(!dragging) return;
+        if(!ev.touches || !ev.touches.length) return;
+        curY = ev.touches[0].clientY;
+        var dy = Math.max(0, curY - startY);
+        if(dy > 0) setTranslate(dy);
+      }
+
+      function onTouchEnd(){
+        if(!dragging) return;
+        dragging = false;
+        panel.style.willChange = '';
+        var dy = Math.max(0, curY - startY);
+        if(dy > 90){
+          clearTranslate();
+          hideDropConfirm();
+          return;
+        }
+        clearTranslate();
+      }
+
+      panel.addEventListener('touchstart', onTouchStart, { passive: true });
+      panel.addEventListener('touchmove', onTouchMove, { passive: false });
+      panel.addEventListener('touchend', onTouchEnd);
+      panel.addEventListener('touchcancel', onTouchEnd);
+    })();
 
     function addFileRowTo(tbodyId, file){
       var tbody = document.getElementById(tbodyId);
@@ -1184,10 +1394,10 @@
       tr.setAttribute('data-file-row', file.id);
       var sizeText = (file.size_bytes ? (file.size_bytes / 1024).toFixed(1) + ' KB' : '-');
       tr.innerHTML = ''+
-        '<td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900" data-file-name></td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 font-semibold text-slate-900 break-all whitespace-normal leading-snug" data-file-name></td>'+
         '<td class="px-4 py-3 border-b border-slate-200 text-slate-600">'+(file.content_type || '-')+'</td>'+
-        '<td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600">'+sizeText+'</td>'+
-        '<td class="px-4 py-3 border-b border-slate-200 text-slate-600">'+(file.uploaded_at || '')+'</td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 text-right text-slate-600" data-file-col="size">'+sizeText+'</td>'+
+        '<td class="px-4 py-3 border-b border-slate-200 text-slate-600" data-file-col="modified">'+(file.uploaded_at || '')+'</td>'+
         '<td class="px-4 py-3 border-b border-slate-200 text-right">'+
           '<div class="flex items-center justify-end gap-2">'+
             '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/file/'+file.id+'/download">'+
@@ -1221,24 +1431,45 @@
       div.setAttribute('data-open-url', '/file/' + file.id + '/download');
       div.innerHTML = ''+
         '<div class="flex items-center justify-between gap-3">'+
-          '<div class="flex items-center gap-3 min-w-0">'+
-            '<div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon><span class="iconify" data-icon="mdi:file-outline"></span></div>'+
+          '<div class="flex items-center gap-3 min-w-0 flex-1">'+
+            '<div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center" data-tile-icon>'+
+              '<span class="iconify" data-icon="mdi:file-outline"></span>'+
+            '</div>'+
             '<div class="min-w-0">'+
-              '<div class="font-semibold text-slate-900 truncate" data-file-name></div>'+
+              '<div class="font-semibold text-slate-900 break-all whitespace-normal leading-snug max-w-full" data-file-name></div>'+
               '<div class="text-xs text-slate-500 truncate"></div>'+
             '</div>'+
           '</div>'+
           '<div class="flex items-center gap-2 shrink-0">'+
-            '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/file/'+file.id+'/download"><span class="iconify" data-icon="mdi:download"></span></a>'+
+            '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/file/'+file.id+'/download">'+
+              '<span class="iconify" data-icon="mdi:download"></span>'+
+            '</a>'+
             '<div class="relative" data-action-menu>'+
-              '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn><span class="iconify" data-icon="mdi:dots-vertical"></span></button>'+
+              '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" title="More" data-action-menu-btn>'+
+                '<span class="iconify" data-icon="mdi:dots-vertical"></span>'+
+              '</button>'+
               '<div class="hidden absolute right-0 mt-2 w-44 minimal-card p-2 shadow-lg z-20" data-action-menu-pop>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:rename-box-outline"></span><span>Rename</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:trash-can-outline"></span><span>Delete</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-rename" data-file-id="'+file.id+'">'+
+                  '<span class="iconify" data-icon="mdi:rename-box-outline"></span>'+
+                  '<span>Rename</span>'+
+                '</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-delete" data-file-id="'+file.id+'">'+
+                  '<span class="iconify" data-icon="mdi:trash-can-outline"></span>'+
+                  '<span>Delete</span>'+
+                '</button>'+
                 '<div class="h-px bg-slate-200 my-1"></div>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'"><span class="iconify" data-icon="mdi:share-variant-outline"></span><span>Share</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="'+file.id+'"><span class="iconify" data-icon="solar:scissors-square-outline"></span><span>Cut</span></button>'+
-                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="'+file.id+'"><span class="iconify" data-icon="solar:copy-line-duotone"></span><span>Copy</span></button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-share" data-file-id="'+file.id+'">'+
+                  '<span class="iconify" data-icon="mdi:share-variant-outline"></span>'+
+                  '<span>Share</span>'+
+                '</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-cut" data-file-id="'+file.id+'">'+
+                  '<span class="iconify" data-icon="solar:scissors-square-outline"></span>'+
+                  '<span>Cut</span>'+
+                '</button>'+
+                '<button class="w-full flex items-center gap-2 text-left px-3 py-2 rounded-lg hover:bg-slate-100 text-slate-800" type="button" data-action="file-copy" data-file-id="'+file.id+'">'+
+                  '<span class="iconify" data-icon="solar:copy-line-duotone"></span>'+
+                  '<span>Copy</span>'+
+                '</button>'+
               '</div>'+
             '</div>'+
           '</div>'+
@@ -1305,7 +1536,11 @@
         hideOverlay();
         var target = getDropTarget();
         if(!target.folderId){
-          vaultAlert('Upload folder not available.');
+          if(window.vaultIsland){
+            window.vaultIsland('Open the Vault and select a folder first, then upload your file into that folder.', { title: 'Choose a folder', level: 'info', icon: 'solar:folder-bold-duotone' });
+          }else{
+            vaultAlert('Open the Vault and select a folder first, then upload your file into that folder.');
+          }
           return;
         }
         dropFile = ev.dataTransfer.files[0];
@@ -1323,7 +1558,11 @@
         if(!dropFile) return;
         var target = getDropTarget();
         if(!target.folderId){
-          vaultAlert('Upload folder not available.');
+          if(window.vaultIsland){
+            window.vaultIsland('Open the Vault and select a folder first, then upload your file into that folder.', { title: 'Choose a folder', level: 'info', icon: 'solar:folder-bold-duotone' });
+          }else{
+            vaultAlert('Open the Vault and select a folder first, then upload your file into that folder.');
+          }
           return;
         }
         uploadBtn.disabled = true;
@@ -1331,12 +1570,24 @@
           var fd = new FormData();
           fd.append('folder_id', target.folderId);
           fd.append('file', dropFile);
-          var res = await fetch('/upload', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }, body: fd });
-          var data = await res.json().catch(function(){ return null; });
-          if(!res.ok || !data || data.ok === false){
-            vaultAlert((data && data.error) ? data.error : 'Upload failed');
+
+          if(window.vaultIslandProgressStart){
+            window.vaultIslandProgressStart('Uploading ' + (dropFile.name || 'file') + '…', { title: 'Uploading', icon: 'solar:upload-bold-duotone' });
+          }
+
+          var data = await xhrJson('/upload', fd, function(pct){
+            if(window.vaultIslandProgressUpdate) window.vaultIslandProgressUpdate(pct, 'Uploading ' + (dropFile.name || 'file') + '…');
+          });
+
+          if(!data || data.ok === false){
+            var msg = (data && data.error) ? data.error : 'Upload failed';
+            if(window.vaultIslandProgressEnd) window.vaultIslandProgressEnd('error', msg, { title: 'Upload failed', icon: 'solar:danger-triangle-bold-duotone' });
+            else vaultAlert(msg);
             return;
           }
+
+          if(window.vaultIslandProgressUpdate) window.vaultIslandProgressUpdate(100, 'Uploading ' + (dropFile.name || 'file') + '…');
+          if(window.vaultIslandProgressEnd) window.vaultIslandProgressEnd('success', 'Uploaded successfully.', { title: 'Uploaded', icon: 'solar:check-circle-bold-duotone' });
           if(data.file){
             addFileRowTo(target.tbodyId, data.file);
             addFileTileTo(target.tilesId, data.file);
@@ -2299,19 +2550,38 @@
       var ajaxType = form.getAttribute('data-ajax') || 'json';
       var url = form.getAttribute('action');
 
-      var options = { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } };
+      var data = null;
       if(ajaxType === 'multipart'){
-        options.body = new FormData(form);
+        var fd2 = new FormData(form);
+        var fileEl = form.querySelector('input[type="file"]');
+        var fileName = '';
+        try{ fileName = (fileEl && fileEl.files && fileEl.files[0]) ? fileEl.files[0].name : ''; }catch(e){ fileName = ''; }
+        if(window.vaultIslandProgressStart){
+          window.vaultIslandProgressStart('Uploading ' + (fileName || 'file') + '…', { title: 'Uploading', icon: 'solar:upload-bold-duotone' });
+        }
+        data = await xhrJson(url, fd2, function(pct){
+          if(window.vaultIslandProgressUpdate) window.vaultIslandProgressUpdate(pct, 'Uploading ' + (fileName || 'file') + '…');
+        });
+        if(!data || data.ok === false){
+          var em = (data && data.error) ? data.error : 'Upload failed';
+          if(window.vaultIslandProgressEnd) window.vaultIslandProgressEnd('error', em, { title: 'Upload failed', icon: 'solar:danger-triangle-bold-duotone' });
+          else vaultAlert(em);
+          return;
+        }
+        if(window.vaultIslandProgressUpdate) window.vaultIslandProgressUpdate(100, 'Uploading ' + (fileName || 'file') + '…');
+        if(window.vaultIslandProgressEnd) window.vaultIslandProgressEnd('success', 'Uploaded successfully.', { title: 'Uploaded', icon: 'solar:check-circle-bold-duotone' });
       }else{
+        var options = { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } };
         options.headers['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8';
         options.body = new URLSearchParams(new FormData(form)).toString();
-      }
-
-      var res = await fetch(url, options);
-      var data = await res.json().catch(function(){ return null; });
-      if(!res.ok || !data || data.ok === false){
-        vaultAlert((data && data.error) ? data.error : 'Request failed');
-        return;
+        var res = await fetch(url, options);
+        data = await res.json().catch(function(){ return null; });
+        if(!res.ok || !data || data.ok === false){
+          var msg2 = (data && data.error) ? data.error : 'Request failed';
+          if(window.vaultIsland) window.vaultIsland(msg2, { title: 'Action failed', level: 'error', icon: 'solar:danger-triangle-bold-duotone' });
+          else vaultAlert(msg2);
+          return;
+        }
       }
 
       if(url.includes('/bookmark') || url.includes('/unbookmark')){
@@ -2340,14 +2610,15 @@
             div.setAttribute('data-open-url', '/folder/' + folder.id);
             div.innerHTML = '<a class="flex items-center gap-3 min-w-0 flex-1" href="/folder/'+folder.id+'">'+
               '<div class="w-8 h-8 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center"><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
-              '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate"></div><div class="text-xs text-slate-500"></div></div></a>'+
+              '<div class="min-w-0"><div class="font-semibold text-slate-900 break-all whitespace-normal leading-snug"></div><div class="text-xs text-slate-500"></div></div></a>'+
               '<div class="flex items-center gap-2">'+
               '<form method="post" class="ajax-form" data-ajax="json" action="/folder/'+folder.id+'/bookmark">'+
               '<button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit" title="Add to Quick access"><span class="iconify" data-icon="mdi:bookmark-outline"></span><span>Pin</span></button>'+
               '</form>'+
               '<a class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" href="/folder/'+folder.id+'" title="Open"><span class="iconify" data-icon="mdi:chevron-right"></span></a>'+
               '</div>';
-            div.querySelector('.truncate').textContent = folder.name;
+            var nameEl = div.querySelector('.font-semibold');
+            if(nameEl) nameEl.textContent = folder.name;
             div.querySelector('.text-xs').textContent = 'Created ' + folder.created_at;
             list.prepend(div);
           }
@@ -2363,7 +2634,7 @@
             tile.setAttribute('data-open-url', '/folder/' + folder.id);
             tile.innerHTML = '<div class="flex items-center gap-3">'+
               '<div class="w-10 h-10 rounded-xl bg-slate-100 text-[#101216] flex items-center justify-center" data-folder-tile-icon><span class="iconify" data-icon="mdi:folder-outline"></span></div>'+
-              '<div class="min-w-0"><div class="font-semibold text-slate-900 truncate" data-folder-tile-title></div><div class="text-xs text-slate-500 truncate">Folder</div></div>'+
+              '<div class="min-w-0"><div class="font-semibold text-slate-900 break-words whitespace-normal leading-snug" data-folder-tile-title></div><div class="text-xs text-slate-500 truncate">Folder</div></div>'+
               '</div>';
             tile.querySelector('[data-folder-tile-title]').textContent = folder.name;
             tiles.prepend(tile);
@@ -2387,6 +2658,43 @@
         var menu = document.getElementById('explorer-new-menu');
         if(menu) menu.classList.add('hidden');
       }
+    }
+
+    function xhrJson(url, body, onProgress){
+      return new Promise(function(resolve){
+        try{
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', url, true);
+          xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+          xhr.setRequestHeader('Accept', 'application/json');
+
+          if(xhr.upload && typeof onProgress === 'function'){
+            xhr.upload.onprogress = function(ev){
+              if(!ev || !ev.lengthComputable) return;
+              var pct = (ev.total > 0) ? (ev.loaded / ev.total) * 100 : 0;
+              try{ onProgress(pct); }catch(e){}
+            };
+          }
+
+          xhr.onreadystatechange = function(){
+            if(xhr.readyState !== 4) return;
+            var txt = xhr.responseText || '';
+            var data = null;
+            try{ data = JSON.parse(txt); }catch(e){ data = null; }
+            if(xhr.status >= 200 && xhr.status < 300){
+              resolve(data);
+              return;
+            }
+            if(!data) data = { ok: false, error: 'Request failed' };
+            if(data && data.ok !== false) data.ok = false;
+            resolve(data);
+          };
+
+          xhr.send(body);
+        }catch(e){
+          resolve({ ok: false, error: 'Request failed' });
+        }
+      });
     }
 
     document.addEventListener('submit', function(ev){

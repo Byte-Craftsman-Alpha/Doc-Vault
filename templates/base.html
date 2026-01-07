@@ -24,9 +24,62 @@
       .flash.success{background:#f8fafc;border-color:#e2e8f0;color:#101216}
       .flash.error{background:#f8fafc;border-color:#e2e8f0;color:#101216}
       #vault-dialog-message{overflow-wrap:anywhere;word-break:break-word;max-height:40vh;overflow:auto}
+
+      @media (max-width: 767px){
+        #vault-sheet-modal{transform:translateY(110%);transition:transform .22s ease}
+        #vault-sheet-modal[data-open="1"]{transform:translateY(0)}
+        #vault-sheet-panel{border-radius:20px 20px 0 0;max-height:82vh;overflow:auto}
+
+        #mobile-new-sheet{transform:translateY(110%);transition:transform .22s ease}
+        #mobile-new-sheet[data-open="1"]{transform:translateY(0)}
+        #mobile-new-panel{border-radius:20px 20px 0 0;max-height:82vh;overflow:auto}
+
+        #vault-island{transform:translateY(-140%);opacity:0;transition:transform .22s ease, opacity .22s ease}
+        #vault-island[data-open="1"]{transform:translateY(0);opacity:1}
+
+        #vault-island-title{overflow:hidden;display:-webkit-box;line-clamp:1;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+        #vault-island-message{overflow:hidden;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;word-break:break-word}
+
+        #vault-island[data-level="info"] [data-island-card]{box-shadow:0 18px 60px rgba(15,23,42,.28)}
+        #vault-island[data-level="success"] [data-island-card]{box-shadow:0 18px 60px rgba(22,163,74,.22)}
+        #vault-island[data-level="warning"] [data-island-card]{box-shadow:0 18px 60px rgba(245,158,11,.24)}
+        #vault-island[data-level="error"] [data-island-card]{box-shadow:0 18px 60px rgba(239,68,68,.24)}
+
+        #vault-island[data-level="info"] [data-island-badge]{background:rgba(59,130,246,.18);color:#dbeafe}
+        #vault-island[data-level="success"] [data-island-badge]{background:rgba(34,197,94,.18);color:#dcfce7}
+        #vault-island[data-level="warning"] [data-island-badge]{background:rgba(245,158,11,.18);color:#ffedd5}
+        #vault-island[data-level="error"] [data-island-badge]{background:rgba(239,68,68,.18);color:#fee2e2}
+
+        #vault-island[data-level="info"] [data-island-progress]{background:#93c5fd}
+        #vault-island[data-level="success"] [data-island-progress]{background:#86efac}
+        #vault-island[data-level="warning"] [data-island-progress]{background:#fdba74}
+        #vault-island[data-level="error"] [data-island-progress]{background:#fca5a5}
+      }
     </style>
   </head>
   <body class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800">
+    <div id="vault-island" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-[160] md:hidden w-[92%] max-w-md">
+      <div class="bg-slate-950/90 text-white rounded-[18px] shadow-2xl backdrop-blur px-4 py-3 border border-white/10" data-island-card>
+        <div class="flex items-start gap-3">
+          <div class="mt-0.5 w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center shrink-0" data-island-badge>
+            <span class="iconify text-[20px]" id="vault-island-icon" data-icon="solar:info-circle-bold-duotone"></span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-[13px] font-semibold" id="vault-island-title">Notice</div>
+            <div class="text-[13px] text-white/90 whitespace-pre-wrap" id="vault-island-message"></div>
+            <div class="mt-2 hidden" id="vault-island-progress-wrap">
+              <div class="h-2 w-full rounded-full bg-white/15 overflow-hidden">
+                <div class="h-2 rounded-full bg-white" data-island-progress id="vault-island-progress-bar" style="width:0%"></div>
+              </div>
+              <div class="mt-1 text-[11px] text-white/80" id="vault-island-progress-text">0%</div>
+            </div>
+          </div>
+          <button class="ml-1 -mt-0.5 minimal-btn bg-white/10 hover:bg-white/15 text-white px-2 py-2" type="button" id="vault-island-close" title="Close">
+            <span class="iconify" data-icon="mdi:close"></span>
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="vault-dialog-backdrop" class="hidden fixed inset-0 z-[100] bg-slate-900/30"></div>
     <div id="vault-dialog-modal" class="hidden fixed inset-0 z-[110] flex items-center justify-center p-6">
       <div class="minimal-card w-full max-w-md p-5 shadow-lg" role="dialog" aria-modal="true" aria-labelledby="vault-dialog-title">
@@ -47,8 +100,79 @@
       </div>
     </div>
 
+    <div id="vault-sheet-backdrop" class="hidden fixed inset-0 z-[100] bg-slate-900/30 md:hidden"></div>
+    <div id="vault-sheet-modal" class="hidden fixed inset-0 z-[110] flex items-end justify-center md:hidden" role="dialog" aria-modal="true" aria-labelledby="vault-sheet-title">
+      <div id="vault-sheet-panel" class="minimal-card w-full border-t border-slate-200 shadow-2xl">
+        <div class="px-4 pt-3 pb-2">
+          <div class="mx-auto h-1.5 w-10 rounded-full bg-slate-300"></div>
+          <div class="mt-3 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold text-slate-900 truncate" id="vault-sheet-title">Message</div>
+            </div>
+            <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" id="vault-sheet-close" title="Close">
+              <span class="iconify" data-icon="mdi:close"></span>
+            </button>
+          </div>
+          <div class="mt-2 text-sm text-slate-700 whitespace-pre-wrap" id="vault-sheet-message"></div>
+          <div class="mt-3 hidden" id="vault-sheet-input-wrap">
+            <input class="minimal-input" id="vault-sheet-input" />
+          </div>
+          <div class="mt-4 flex items-center justify-end gap-2 pb-4">
+            <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800 hidden" type="button" id="vault-sheet-cancel">Cancel</button>
+            <button class="minimal-btn minimal-btn-primary" type="button" id="vault-sheet-ok">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="mobile-sidebar-backdrop" class="hidden fixed inset-0 z-[94] bg-slate-900/30 md:hidden"></div>
+
+    <div id="mobile-new-backdrop" class="hidden fixed inset-0 z-[96] bg-slate-900/30 md:hidden"></div>
+    <div id="mobile-new-sheet" class="hidden fixed inset-0 z-[97] flex items-end justify-center md:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-new-title">
+      <div id="mobile-new-panel" class="minimal-card w-full border-t border-slate-200 shadow-2xl">
+        <div class="px-4 pt-3 pb-4">
+          <div class="mx-auto h-1.5 w-10 rounded-full bg-slate-300"></div>
+          <div class="mt-3 flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <div class="font-semibold text-slate-900 truncate" id="mobile-new-title">New</div>
+              <div class="text-xs text-slate-500 mt-1">Create or upload into the current folder</div>
+            </div>
+            <button class="minimal-btn bg-slate-100 hover:bg-slate-200 text-slate-800" type="button" id="mobile-new-close" title="Close">
+              <span class="iconify" data-icon="mdi:close"></span>
+            </button>
+          </div>
+
+          <div class="mt-4 grid gap-2">
+            <button class="w-full minimal-card border border-slate-200 p-3 text-left hover:bg-slate-50" type="button" id="mobile-new-folder">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+                  <span class="iconify" data-icon="mdi:folder-plus-outline"></span>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-slate-900">Create new folder</div>
+                  <div class="text-xs text-slate-500 mt-0.5">Name it and create instantly</div>
+                </div>
+              </div>
+            </button>
+
+            <button class="w-full minimal-card border border-slate-200 p-3 text-left hover:bg-slate-50" type="button" id="mobile-new-upload">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center">
+                  <span class="iconify" data-icon="mdi:upload"></span>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-semibold text-slate-900">Upload file</div>
+                  <div class="text-xs text-slate-500 mt-0.5">Pick a file from your device</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="min-h-screen flex flex-col md:flex-row">
-      <aside class="p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-white/60 backdrop-blur md:w-[280px] shrink-0">
+      <aside id="mobile-sidebar" class="p-6 border-b md:border-b-0 md:border-r border-slate-200 bg-white/80 backdrop-blur md:w-[280px] shrink-0 fixed inset-y-0 left-0 z-[95] w-[280px] -translate-x-full transition-transform duration-200 ease-out md:static md:z-auto md:translate-x-0 md:bg-white/60">
         <div class="flex items-center gap-3 mb-8">
           <img class="w-10 h-10 rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] object-cover" src="{{ url_for('static', filename='logo/logo.png') }}" alt="Logo" />
           <div>
@@ -82,6 +206,23 @@
         <div class="mt-10 minimal-card p-4">
           <div class="text-xs uppercase tracking-wider text-slate-500">Signed in as</div>
           <div class="mt-2 font-semibold text-slate-900">{{ current_user.username }}</div>
+
+          {% if storage_user_limit_bytes and storage_user_limit_bytes > 0 %}
+            <div class="mt-4">
+              <div class="flex items-center justify-between text-xs text-slate-500">
+                <span class="font-semibold uppercase tracking-wider">Storage</span>
+                <span>{{ format_bytes(storage_user_used_bytes) }} / {{ format_bytes(storage_user_limit_bytes) }}</span>
+              </div>
+              <div class="mt-1 text-[11px] text-slate-500">Free: {{ format_bytes(storage_user_free_bytes) }}</div>
+              <div class="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+                <div class="h-2 rounded-full bg-slate-900" style="width: {{ storage_user_pct }}%"></div>
+              </div>
+              {% if storage_server_limit_bytes and storage_server_limit_bytes > 0 %}
+                <div class="mt-2 text-[11px] text-slate-500">Server: {{ format_bytes(storage_server_used_bytes) }} / {{ format_bytes(storage_server_limit_bytes) }} (Free: {{ format_bytes(storage_server_free_bytes) }})</div>
+              {% endif %}
+            </div>
+          {% endif %}
+
           <a class="minimal-btn w-full bg-slate-100 hover:bg-slate-200 text-slate-800 mt-3" href="{{ url_for('account') }}">Account</a>
           <form class="mt-4" method="post" action="{{ url_for('logout') }}">
             <button class="minimal-btn w-full bg-slate-100 hover:bg-slate-200 text-slate-800" type="submit">Logout</button>
@@ -89,12 +230,22 @@
         </div>
       </aside>
 
-      <main class="p-6 md:p-8 flex-1 flex flex-col">
-        <div class="space-y-3 mb-6">
+      <main class="p-4 pb-24 md:p-8 flex-1 flex flex-col">
+        <div class="flex items-center justify-between gap-3 mb-4 md:hidden">
+          <button class="minimal-btn bg-white/80 border border-slate-200 text-slate-800" type="button" id="mobile-sidebar-open" title="Menu">
+            <span class="iconify" data-icon="solar:hamburger-menu-bold-duotone"></span>
+          </button>
+          <div class="font-semibold text-slate-900 truncate">MewDrive</div>
+          <a class="minimal-btn bg-white/80 border border-slate-200 text-slate-800" href="{{ url_for('search') }}" title="Search">
+            <span class="iconify" data-icon="mdi:magnify"></span>
+          </a>
+        </div>
+
+        <div class="space-y-3 mb-6 hidden md:block">
           {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
               {% for category, message in messages %}
-                <div class="flash {{ category }}">{{ message }}</div>
+                <div class="flash {{ category }}" data-flash="1" data-flash-level="{{ category }}">{{ message }}</div>
               {% endfor %}
             {% endif %}
           {% endwith %}
@@ -106,9 +257,271 @@
       </main>
     </div>
 
+    <nav class="fixed bottom-0 left-0 right-0 z-[90] md:hidden bg-white/80 backdrop-blur border-t border-slate-200">
+      <div class="max-w-md mx-auto grid grid-cols-5 px-2 py-2">
+        <a class="flex flex-col items-center justify-center gap-1 py-2 rounded-xl {% if request.endpoint in ['dashboard'] and not selected_folder_id %}bg-slate-100 text-slate-900{% else %}text-slate-600{% endif %}" href="{{ url_for('dashboard') }}">
+          <span class="iconify text-[20px]" data-icon="mdi:home-outline"></span>
+          <span class="text-[11px] font-semibold">Vault</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-1 py-2 rounded-xl {% if request.endpoint == 'search' %}bg-slate-100 text-slate-900{% else %}text-slate-600{% endif %}" href="{{ url_for('search') }}">
+          <span class="iconify text-[20px]" data-icon="mdi:magnify"></span>
+          <span class="text-[11px] font-semibold">Search</span>
+        </a>
+        <button class="flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-slate-600" type="button" id="mobile-new-open">
+          <span class="iconify text-[22px]" data-icon="solar:add-circle-bold-duotone"></span>
+          <span class="text-[11px] font-semibold">New</span>
+        </button>
+        <a class="flex flex-col items-center justify-center gap-1 py-2 rounded-xl {% if request.endpoint == 'shared_links' %}bg-slate-100 text-slate-900{% else %}text-slate-600{% endif %}" href="{{ url_for('shared_links') }}">
+          <span class="iconify text-[20px]" data-icon="mdi:link-variant"></span>
+          <span class="text-[11px] font-semibold">Shared</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-1 py-2 rounded-xl {% if request.endpoint == 'account' %}bg-slate-100 text-slate-900{% else %}text-slate-600{% endif %}" href="{{ url_for('account') }}">
+          <span class="iconify text-[20px]" data-icon="solar:user-bold-duotone"></span>
+          <span class="text-[11px] font-semibold">Account</span>
+        </a>
+      </div>
+    </nav>
+
     <script>
       (function(){
         function qs(id){ return document.getElementById(id); }
+
+        (function(){
+          var backdrop = qs('mobile-new-backdrop');
+          var modal = qs('mobile-new-sheet');
+          var panel = qs('mobile-new-panel');
+          var openBtn = qs('mobile-new-open');
+          var closeBtn = qs('mobile-new-close');
+          var newFolderBtn = qs('mobile-new-folder');
+          var uploadBtn = qs('mobile-new-upload');
+
+          if(!backdrop || !modal || !panel || !openBtn || !closeBtn || !newFolderBtn || !uploadBtn) return;
+
+          function isMobileUI(){
+            try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+          }
+
+          function show(){
+            if(!isMobileUI()) return;
+            backdrop.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            modal.setAttribute('data-open', '1');
+            try{ if(document.activeElement) document.activeElement.blur(); }catch(e){}
+          }
+
+          function hide(){
+            modal.removeAttribute('data-open');
+            backdrop.classList.add('hidden');
+            setTimeout(function(){
+              if(!modal.getAttribute('data-open')) modal.classList.add('hidden');
+            }, 240);
+          }
+
+          openBtn.addEventListener('click', function(){ show(); });
+          closeBtn.addEventListener('click', function(){ hide(); });
+          backdrop.addEventListener('click', function(){ hide(); });
+
+          function openExplorerNewMenu(){
+            if(typeof window.toggleExplorerNewMenu === 'function'){
+              try{
+                var el = document.getElementById('explorer-new-menu');
+                if(el && el.classList.contains('hidden')) window.toggleExplorerNewMenu();
+                if(!el) window.toggleExplorerNewMenu();
+              }catch(e){
+                window.toggleExplorerNewMenu();
+              }
+              return true;
+            }
+            return false;
+          }
+
+          newFolderBtn.addEventListener('click', function(){
+            hide();
+            setTimeout(function(){
+              if(!openExplorerNewMenu()){
+                if(window.vaultIsland) window.vaultIsland('To create folders, open the Vault (Explorer) first, then tap New.', { title: 'Not available here', level: 'info', icon: 'solar:folder-bold-duotone' });
+                return;
+              }
+              var input = document.getElementById('new-folder-input');
+              if(input){
+                try{ input.focus(); input.select(); }catch(e){}
+              }
+            }, 120);
+          });
+
+          uploadBtn.addEventListener('click', function(){
+            hide();
+            setTimeout(function(){
+              if(!openExplorerNewMenu()){
+                if(window.vaultIsland) window.vaultIsland('To upload files, open the Vault (Explorer) first, then tap New → Upload file.', { title: 'Not available here', level: 'info', icon: 'solar:upload-bold-duotone' });
+                return;
+              }
+              var fileInput = document.getElementById('new-upload-file-input');
+              if(fileInput){
+                try{ fileInput.click(); }catch(e){}
+              }
+            }, 120);
+          });
+
+          var startY = 0;
+          var curY = 0;
+          var dragging = false;
+          var allowDrag = false;
+
+          function setTranslate(y){
+            panel.style.transition = 'none';
+            panel.style.transform = 'translateY(' + y + 'px)';
+          }
+
+          function clearTranslate(){
+            panel.style.transition = '';
+            panel.style.transform = '';
+          }
+
+          function onTouchStart(ev){
+            if(!isMobileUI()) return;
+            if(!ev.touches || !ev.touches.length) return;
+            if(modal.classList.contains('hidden')) return;
+            if(panel.scrollTop && panel.scrollTop > 0) return;
+            dragging = true;
+            allowDrag = true;
+            startY = ev.touches[0].clientY;
+            curY = startY;
+            panel.style.willChange = 'transform';
+          }
+
+          function onTouchMove(ev){
+            if(!dragging) return;
+            if(!allowDrag) return;
+            if(!ev.touches || !ev.touches.length) return;
+            curY = ev.touches[0].clientY;
+            var dy = Math.max(0, curY - startY);
+            if(dy > 0){
+              try{ ev.preventDefault(); }catch(e){}
+              setTranslate(dy);
+            }
+          }
+
+          function onTouchEnd(){
+            if(!dragging) return;
+            dragging = false;
+            allowDrag = false;
+            panel.style.willChange = '';
+            var dy = Math.max(0, curY - startY);
+            if(dy > 70){
+              clearTranslate();
+              hide();
+              return;
+            }
+            clearTranslate();
+          }
+
+          panel.addEventListener('touchstart', onTouchStart, { passive: true });
+          panel.addEventListener('touchmove', onTouchMove, { passive: false });
+          panel.addEventListener('touchend', onTouchEnd);
+          panel.addEventListener('touchcancel', onTouchEnd);
+
+          try{
+            if(window.matchMedia){
+              window.matchMedia('(min-width: 768px)').addEventListener('change', function(ev){
+                if(ev.matches) hide();
+              });
+            }
+          }catch(e){}
+        })();
+
+        (function(){
+          var sidebar = qs('mobile-sidebar');
+          var backdrop = qs('mobile-sidebar-backdrop');
+          var openBtn = qs('mobile-sidebar-open');
+          if(!sidebar || !backdrop) return;
+
+          function isMobileUI(){
+            try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+          }
+
+          function openSidebar(){
+            if(!isMobileUI()) return;
+            sidebar.classList.remove('-translate-x-full');
+            backdrop.classList.remove('hidden');
+            try{ if(document.activeElement) document.activeElement.blur(); }catch(e){}
+          }
+
+          function closeSidebar(){
+            sidebar.classList.add('-translate-x-full');
+            backdrop.classList.add('hidden');
+          }
+
+          if(openBtn) openBtn.addEventListener('click', function(){ openSidebar(); });
+          backdrop.addEventListener('click', function(){ closeSidebar(); });
+
+          sidebar.addEventListener('click', function(ev){
+            var link = ev.target && ev.target.closest ? ev.target.closest('a') : null;
+            if(link && isMobileUI()) closeSidebar();
+          });
+
+          document.addEventListener('keydown', function(ev){
+            if(ev.key === 'Escape' && isMobileUI()) closeSidebar();
+          }, true);
+
+          var startX = 0;
+          var curX = 0;
+          var dragging = false;
+
+          function setTranslate(x){
+            sidebar.style.transition = 'none';
+            sidebar.style.transform = 'translateX(' + x + 'px)';
+          }
+
+          function clearTranslate(){
+            sidebar.style.transition = '';
+            sidebar.style.transform = '';
+          }
+
+          function onTouchStart(ev){
+            if(!isMobileUI()) return;
+            if(!ev.touches || !ev.touches.length) return;
+            if(sidebar.classList.contains('-translate-x-full')) return;
+            dragging = true;
+            startX = ev.touches[0].clientX;
+            curX = startX;
+            sidebar.style.willChange = 'transform';
+          }
+
+          function onTouchMove(ev){
+            if(!dragging) return;
+            if(!ev.touches || !ev.touches.length) return;
+            curX = ev.touches[0].clientX;
+            var dx = Math.min(0, curX - startX);
+            if(dx < 0) setTranslate(dx);
+          }
+
+          function onTouchEnd(){
+            if(!dragging) return;
+            dragging = false;
+            sidebar.style.willChange = '';
+            var dx = Math.min(0, curX - startX);
+            if(dx < -80){
+              clearTranslate();
+              closeSidebar();
+              return;
+            }
+            clearTranslate();
+          }
+
+          sidebar.addEventListener('touchstart', onTouchStart, { passive: true });
+          sidebar.addEventListener('touchmove', onTouchMove, { passive: true });
+          sidebar.addEventListener('touchend', onTouchEnd);
+          sidebar.addEventListener('touchcancel', onTouchEnd);
+
+          try{
+            if(window.matchMedia){
+              window.matchMedia('(min-width: 768px)').addEventListener('change', function(ev){
+                if(ev.matches) closeSidebar();
+              });
+            }
+          }catch(e){}
+        })();
 
         function getEls(){
           return {
@@ -144,8 +557,176 @@
           el.textContent = (text == null) ? '' : String(text);
         }
 
+        function isMobileUI(){
+          try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+        }
+
+        function openSheet(opts){
+          opts = opts || {};
+          return new Promise(function(resolve){
+            var backdrop = qs('vault-sheet-backdrop');
+            var modal = qs('vault-sheet-modal');
+            var panel = qs('vault-sheet-panel');
+            var title = qs('vault-sheet-title');
+            var message = qs('vault-sheet-message');
+            var inputWrap = qs('vault-sheet-input-wrap');
+            var input = qs('vault-sheet-input');
+            var ok = qs('vault-sheet-ok');
+            var cancel = qs('vault-sheet-cancel');
+            var close = qs('vault-sheet-close');
+            if(!backdrop || !modal || !panel || !ok || !cancel || !close){
+              resolve(opts.kind === 'confirm' ? false : (opts.kind === 'prompt' ? null : undefined));
+              return;
+            }
+
+            var kind = opts.kind || 'alert';
+            setText(title, opts.title || (kind === 'confirm' ? 'Confirm' : (kind === 'prompt' ? 'Input' : 'Message')));
+            setText(message, opts.message || '');
+
+            if(inputWrap) inputWrap.classList.toggle('hidden', kind !== 'prompt');
+            if(cancel) cancel.classList.toggle('hidden', kind === 'alert');
+            if(ok) setText(ok, opts.okText || 'OK');
+            if(cancel) setText(cancel, opts.cancelText || 'Cancel');
+            if(input) input.value = (opts.defaultValue == null) ? '' : String(opts.defaultValue);
+
+            var finished = false;
+            function done(val){
+              if(finished) return;
+              finished = true;
+              cleanup();
+              hide();
+              resolve(val);
+            }
+
+            function show(){
+              backdrop.classList.remove('hidden');
+              modal.classList.remove('hidden');
+              modal.setAttribute('data-open', '1');
+              try{ if(document.activeElement) document.activeElement.blur(); }catch(e){}
+            }
+
+            function hide(){
+              modal.removeAttribute('data-open');
+              backdrop.classList.add('hidden');
+              setTimeout(function(){
+                if(!modal.getAttribute('data-open')) modal.classList.add('hidden');
+              }, 240);
+            }
+
+            function onOk(){
+              if(kind === 'confirm') return done(true);
+              if(kind === 'prompt') return done(input ? String(input.value || '') : '');
+              return done();
+            }
+
+            function onCancel(){
+              if(kind === 'confirm') return done(false);
+              if(kind === 'prompt') return done(null);
+              return done();
+            }
+
+            var startY = 0;
+            var curY = 0;
+            var dragging = false;
+
+            function setTranslate(y){
+              panel.style.transition = 'none';
+              panel.style.transform = 'translateY(' + y + 'px)';
+            }
+
+            function clearTranslate(){
+              panel.style.transition = '';
+              panel.style.transform = '';
+            }
+
+            function onTouchStart(ev){
+              if(!ev.touches || !ev.touches.length) return;
+              dragging = true;
+              startY = ev.touches[0].clientY;
+              curY = startY;
+              panel.style.willChange = 'transform';
+            }
+
+            function onTouchMove(ev){
+              if(!dragging || !ev.touches || !ev.touches.length) return;
+              curY = ev.touches[0].clientY;
+              var dy = Math.max(0, curY - startY);
+              if(dy > 0){
+                setTranslate(dy);
+              }
+            }
+
+            function onTouchEnd(){
+              if(!dragging) return;
+              dragging = false;
+              panel.style.willChange = '';
+              var dy = Math.max(0, curY - startY);
+              if(dy > 90){
+                clearTranslate();
+                onCancel();
+                return;
+              }
+              clearTranslate();
+            }
+
+            function onKey(ev){
+              if(!modal || modal.getAttribute('data-open') !== '1') return;
+              if(ev.key === 'Escape'){
+                ev.preventDefault();
+                onCancel();
+              }
+              if(ev.key === 'Enter'){
+                if(kind === 'prompt'){
+                  if(ev.target && ev.target.id === 'vault-sheet-input'){
+                    ev.preventDefault();
+                    onOk();
+                  }
+                }
+              }
+            }
+
+            function cleanup(){
+              document.removeEventListener('keydown', onKey, true);
+              ok.removeEventListener('click', onOk);
+              cancel.removeEventListener('click', onCancel);
+              close.removeEventListener('click', onCancel);
+              backdrop.removeEventListener('click', onCancel);
+              panel.removeEventListener('touchstart', onTouchStart, { passive: true });
+              panel.removeEventListener('touchmove', onTouchMove, { passive: true });
+              panel.removeEventListener('touchend', onTouchEnd);
+              panel.removeEventListener('touchcancel', onTouchEnd);
+            }
+
+            document.addEventListener('keydown', onKey, true);
+            ok.addEventListener('click', onOk);
+            cancel.addEventListener('click', onCancel);
+            close.addEventListener('click', onCancel);
+            backdrop.addEventListener('click', onCancel);
+            panel.addEventListener('touchstart', onTouchStart, { passive: true });
+            panel.addEventListener('touchmove', onTouchMove, { passive: true });
+            panel.addEventListener('touchend', onTouchEnd);
+            panel.addEventListener('touchcancel', onTouchEnd);
+
+            show();
+
+            setTimeout(function(){
+              try{
+                if(kind === 'prompt' && input){
+                  input.focus();
+                  input.select();
+                }else if(ok){
+                  ok.focus();
+                }
+              }catch(e){}
+            }, 0);
+          });
+        }
+
         function openDialog(opts){
           opts = opts || {};
+          if(isMobileUI()){
+            return openSheet(opts);
+          }
           return new Promise(function(resolve){
             var el = getEls();
             if(!el.modal || !el.backdrop){
@@ -231,7 +812,118 @@
         }
 
         window.vaultAlert = function(message, title){
+          function isMobileUI(){
+            try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+          }
+          if(isMobileUI() && window.vaultIsland){
+            window.vaultIsland(message, { title: title || 'Message', level: 'info', icon: 'solar:info-circle-bold-duotone' });
+            return Promise.resolve();
+          }
           return openDialog({ kind: 'alert', title: title || 'Message', message: message, okText: 'OK' });
+        };
+
+        window.vaultIsland = function(message, opts){
+          opts = opts || {};
+          function isMobileUI(){
+            try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+          }
+          if(!isMobileUI()){
+            return window.vaultAlert(message, opts.title || 'Message');
+          }
+
+          var wrap = document.getElementById('vault-island');
+          var msg = document.getElementById('vault-island-message');
+          var ttl = document.getElementById('vault-island-title');
+          var ic = document.getElementById('vault-island-icon');
+          var close = document.getElementById('vault-island-close');
+          var progWrap = document.getElementById('vault-island-progress-wrap');
+          var progBar = document.getElementById('vault-island-progress-bar');
+          var progText = document.getElementById('vault-island-progress-text');
+          if(!wrap || !msg || !ttl || !ic || !close){
+            return window.vaultAlert(message, opts.title || 'Message');
+          }
+
+          var level = (opts.level || 'info').toLowerCase();
+          if(level === 'warn') level = 'warning';
+          if(level !== 'info' && level !== 'success' && level !== 'warning' && level !== 'error') level = 'info';
+          var icon = opts.icon || (level === 'error' ? 'solar:danger-triangle-bold-duotone' : (level === 'success' ? 'solar:check-circle-bold-duotone' : 'solar:info-circle-bold-duotone'));
+          ttl.textContent = opts.title || (level === 'error' ? 'Action needed' : (level === 'success' ? 'Done' : 'Notice'));
+          msg.textContent = String(message || '');
+          ic.setAttribute('data-icon', icon);
+          wrap.setAttribute('data-level', level);
+
+          var sticky = !!opts.sticky;
+          var progress = opts.progress;
+          if(progWrap && progBar && progText){
+            if(progress && typeof progress.pct === 'number'){
+              progWrap.classList.remove('hidden');
+              var pct = Math.max(0, Math.min(100, Math.round(progress.pct)));
+              progBar.style.width = pct + '%';
+              progText.textContent = pct + '%';
+              sticky = true;
+            }else{
+              progWrap.classList.add('hidden');
+              progBar.style.width = '0%';
+              progText.textContent = '';
+            }
+          }
+          if(window.Iconify && typeof window.Iconify.scan === 'function'){
+            try{ window.Iconify.scan(wrap); }catch(e){}
+          }
+
+          wrap.classList.remove('hidden');
+          wrap.setAttribute('data-open', '1');
+
+          var t;
+          function hide(){
+            wrap.removeAttribute('data-open');
+            clearTimeout(t);
+            setTimeout(function(){
+              if(!wrap.getAttribute('data-open')) wrap.classList.add('hidden');
+            }, 220);
+          }
+
+          close.onclick = function(){ hide(); };
+          clearTimeout(t);
+          if(!sticky){
+            t = setTimeout(hide, opts.durationMs || 2600);
+          }
+        };
+
+        window.vaultIslandProgressStart = function(message, opts){
+          opts = opts || {};
+          window.vaultIsland(message || 'Uploading…', {
+            title: opts.title || 'Uploading',
+            level: opts.level || 'info',
+            icon: opts.icon || 'solar:upload-bold-duotone',
+            progress: { pct: 0 },
+            sticky: true
+          });
+        };
+
+        window.vaultIslandProgressUpdate = function(pct, message){
+          var p = 0;
+          try{ p = Number(pct); }catch(e){ p = 0; }
+          window.vaultIsland(message || 'Uploading…', {
+            title: 'Uploading',
+            level: 'info',
+            icon: 'solar:upload-bold-duotone',
+            progress: { pct: p },
+            sticky: (p < 100)
+          });
+        };
+
+        window.vaultIslandProgressEnd = function(level, message, opts){
+          opts = opts || {};
+          var lv = (level || 'success').toLowerCase();
+          var icon = opts.icon || (lv === 'error' ? 'solar:danger-triangle-bold-duotone' : 'solar:check-circle-bold-duotone');
+          window.vaultIsland(message || (lv === 'error' ? 'Upload failed' : 'Upload complete'), {
+            title: opts.title || (lv === 'error' ? 'Upload failed' : 'Uploaded'),
+            level: lv,
+            icon: icon,
+            sticky: false,
+            durationMs: opts.durationMs || 2600
+          });
         };
 
         window.vaultConfirm = function(message, title){
@@ -241,6 +933,45 @@
         window.vaultPrompt = function(message, defaultValue, title){
           return openDialog({ kind: 'prompt', title: title || 'Input', message: message, defaultValue: defaultValue, okText: 'OK', cancelText: 'Cancel' });
         };
+      })();
+    </script>
+
+    <script>
+      (function(){
+        function isMobileUI(){
+          try{ return window.matchMedia && window.matchMedia('(max-width: 767px)').matches; }catch(e){ return false; }
+        }
+        function toLevel(cat){
+          cat = String(cat || '').toLowerCase();
+          if(cat.indexOf('error') !== -1) return 'error';
+          if(cat.indexOf('success') !== -1) return 'success';
+          return 'info';
+        }
+        function iconFor(level){
+          if(level === 'error') return 'solar:danger-triangle-bold-duotone';
+          if(level === 'success') return 'solar:check-circle-bold-duotone';
+          return 'solar:info-circle-bold-duotone';
+        }
+
+        function run(){
+          if(!isMobileUI()) return;
+          if(typeof window.vaultIsland !== 'function') return;
+          var flashes = document.querySelectorAll('[data-flash="1"]');
+          if(!flashes || !flashes.length) return;
+          for(var i=0;i<flashes.length;i++){
+            var el = flashes[i];
+            var msg = (el.textContent || '').trim();
+            var lv = toLevel(el.getAttribute('data-flash-level'));
+            if(!msg) continue;
+            window.vaultIsland(msg, { title: (lv === 'error' ? 'Error' : (lv === 'success' ? 'Success' : 'Notice')), level: lv, icon: iconFor(lv) });
+          }
+        }
+
+        if(document.readyState === 'loading'){
+          document.addEventListener('DOMContentLoaded', run);
+        }else{
+          run();
+        }
       })();
     </script>
 

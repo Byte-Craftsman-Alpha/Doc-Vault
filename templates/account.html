@@ -4,6 +4,35 @@
 
 {% block content %}
   <div class="max-w-2xl">
+    {% if storage_user_limit_bytes and storage_user_limit_bytes > 0 %}
+      <div class="minimal-card p-5 mb-5">
+        <div class="text-xs uppercase tracking-wider text-slate-500">Storage</div>
+        <div class="text-slate-500 mt-1">Your storage usage and limits.</div>
+
+        <div class="mt-4">
+          <div class="flex items-center justify-between text-sm text-slate-700">
+            <div class="font-semibold text-slate-900">User</div>
+            <div class="text-slate-500">{{ format_bytes(storage_user_used_bytes) }} / {{ format_bytes(storage_user_limit_bytes) }}</div>
+          </div>
+          <div class="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+            <div class="h-2 rounded-full bg-slate-900" style="width: {{ storage_user_pct }}%"></div>
+          </div>
+        </div>
+
+        {% if storage_server_limit_bytes and storage_server_limit_bytes > 0 %}
+          <div class="mt-4">
+            <div class="flex items-center justify-between text-sm text-slate-700">
+              <div class="font-semibold text-slate-900">Server</div>
+              <div class="text-slate-500">{{ format_bytes(storage_server_used_bytes) }} / {{ format_bytes(storage_server_limit_bytes) }}</div>
+            </div>
+            <div class="mt-2 h-2 w-full rounded-full bg-slate-200 overflow-hidden">
+              <div class="h-2 rounded-full bg-slate-900" style="width: {{ storage_server_pct }}%"></div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
     <div class="minimal-card p-5">
       <div class="text-xs uppercase tracking-wider text-slate-500">Account</div>
       <div class="text-xl font-semibold text-slate-900 mt-1">Change password</div>
