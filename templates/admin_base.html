@@ -43,6 +43,10 @@
             <span class="iconify" data-icon="mdi:account-group-outline"></span>
             <span>Users</span>
           </a>
+          <a class="admin-btn admin-btn-soft" href="{{ url_for('admin_password') }}">
+            <span class="iconify" data-icon="mdi:lock-outline"></span>
+            <span>Password</span>
+          </a>
           <form method="post" action="{{ url_for('logout') }}">
             <button class="admin-btn admin-btn-primary" type="submit">Logout</button>
           </form>

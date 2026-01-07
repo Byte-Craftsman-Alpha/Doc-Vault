@@ -1356,6 +1356,40 @@ def create_app():
         users = User.query.order_by(User.created_at.desc()).all()
         return render_template("admin_dashboard.html", users=users)
 
+    @app.get("/admin/password")
+    @admin_required
+    def admin_password():
+        return render_template("admin_password.html")
+
+    @app.post("/admin/password")
+    @admin_required
+    def admin_password_post():
+        current_pw = request.form.get("current_password") or ""
+        new_pw = request.form.get("new_password") or ""
+        new_pw2 = request.form.get("new_password2") or ""
+
+        if not check_password_hash(current_user.password_hash, current_pw):
+            flash("Current password is incorrect.", "error")
+            return redirect(url_for("admin_password"))
+
+        if not new_pw:
+            flash("New password is required.", "error")
+            return redirect(url_for("admin_password"))
+
+        if len(new_pw) < 6:
+            flash("New password must be at least 6 characters.", "error")
+            return redirect(url_for("admin_password"))
+
+        if new_pw != new_pw2:
+            flash("New passwords do not match.", "error")
+            return redirect(url_for("admin_password"))
+
+        current_user.password_hash = generate_password_hash(new_pw)
+        db.session.commit()
+
+        flash("Admin password updated.", "success")
+        return redirect(url_for("admin_dashboard"))
+
     @app.get("/admin/user/<int:user_id>")
     @admin_required
     def admin_user(user_id: int):
