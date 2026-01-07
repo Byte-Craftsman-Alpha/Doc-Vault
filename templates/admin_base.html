@@ -78,7 +78,7 @@
           if(!name) return '';
           if(name.startsWith('solar:')) return name;
           if(MAP[name]) return MAP[name];
-          if(name.startsWith('mdi:')) return 'solar:question-circle-bold-duotone';
+          if(name.startsWith('mdi:')) return name;
           return name;
         }
 
